@@ -102,7 +102,7 @@ public class MultiplayerManager : MonoBehaviour
         }
     }
 
-    private void SetupServer()
+    public void SetupServer()
     {
         connectionType = ConnectionType.Server;
 
@@ -121,7 +121,7 @@ public class MultiplayerManager : MonoBehaviour
         _disconnect.SetActive(true);
     }
 
-    private void SetupClient()
+    public void SetupClient()
     {
         connectionType = ConnectionType.Client;
         packetActions = new Dictionary<PacketIDs, Action<PacketBase>>();
