@@ -61,7 +61,10 @@ public class MultiplayerManager : MonoBehaviour
     }
     public void Awake()
     {
-        instance = this;
+        if (instance == null)
+            instance = this;
+        else
+            Destroy(gameObject);
     }
     void Start()
     {
@@ -77,16 +80,20 @@ public class MultiplayerManager : MonoBehaviour
         _disconnect = GameObject.Find("Disconnect");
         _networkUI = GameObject.Find("NetWork UI");
 
-        Transform userypass = GameObject.Find("User y Pass").transform;
-        _user = userypass.Find("User").GetComponent<InputField>();
-        _password = userypass.Find("Pass").GetComponent<InputField>();
+        if(SceneManager.GetActiveScene().buildIndex == SceneManager.GetSceneByName("Login").buildIndex)
+        {
+            Transform userypass = GameObject.Find("User y Pass").transform;
+            _user = userypass.Find("User").GetComponent<InputField>();
+            _password = userypass.Find("Pass").GetComponent<InputField>();
 
-        _ip = _networkUI.transform.Find("IP").GetComponent<InputField>();
+            _ip = _networkUI.transform.Find("IP").GetComponent<InputField>();
+        }
 
 
         _disconnect.SetActive(false);
 
     }
+
 
     public void Disconnect()
     {
@@ -149,6 +156,8 @@ public class MultiplayerManager : MonoBehaviour
             return;
         }
 
+        if(connectionType == ConnectionType.Client) SceneManager.LoadScene(SceneManager.GetSceneByName("Login").buildIndex);
+
         print("Se conecto alguien con el ID: " + _connections[_connections.Count - 1].connectionId);
 
         NetworkServer.connections[_connections[_connections.Count - 1].connectionId].isReady = true;
@@ -177,6 +186,8 @@ public class MultiplayerManager : MonoBehaviour
             StartCoroutine(CountDown(3));
         }
     }
+
+
 
     private void Ondisconnect(NetworkMessage netMsg)
     {
