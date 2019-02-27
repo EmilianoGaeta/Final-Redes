@@ -50,17 +50,26 @@ public class ServerLogic : MonoBehaviour
     {
         if (_mysqlLogic.GetComponent<LoginAndRegister>().LogIn(user, pass))
         {
-            ServerManager.instance.OnUserChecked(true, user);
-            var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user);
-            new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2)
+            new PacketBase(PacketIDs.Conected_Command)
           .SendAsServer(id);
 
-            Server_GetHighScores_Command(id);
+
+          //  ServerManager.instance.OnUserChecked(true, user);
+          //  var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user);
+          //  new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2)
+          //.SendAsServer(id);
+          //  Server_GetHighScores_Command(id);
+
         }
         else
             ServerManager.instance.OnUserChecked(false, user);
     }
-
+    internal void Server_FriendList(int id,string user)
+    {
+        var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user);
+        new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2)
+      .SendAsServer(id);
+    }
     //Set Player Values
     public void Server_StartPlayer(string name, int playerId)
     {
@@ -188,7 +197,7 @@ public class ServerLogic : MonoBehaviour
         }
     }
 
-    public void Server_GetUserHighScore_Command(int id,string user)
+    public void Server_GetUserHighScorer(int id,string user)
     {
         if (user == "")
         {
@@ -206,5 +215,9 @@ public class ServerLogic : MonoBehaviour
         var scores = _mysqlLogic.GetComponent<UserCommandsFunc>().GetHighScores();
         new PacketBase(PacketIDs.WriteHighScore_Command).Add(scores)
         .SendAsServer(id);
+    }
+    public void Server_UserReadyToPlay_Command(int id, string user)
+    {
+        ServerManager.instance.PlayerReadyToGame(id, user);
     }
 }

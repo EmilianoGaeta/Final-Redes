@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,6 +9,13 @@ using UnityEngine.Networking;
 
 public class ServerManager : MonoBehaviour
 {
+
+    private int cantJug = 0;
+
+
+
+
+
     public Dictionary<int, Player> myPlayers = new Dictionary<int, Player>();
 
     public static NetworkClient myClient;
@@ -91,9 +99,11 @@ public class ServerManager : MonoBehaviour
         //PlayerReadyToGame(user);
     }
 
-    private void PlayerReadyToGame(string user)
+    public void PlayerReadyToGame(int id, string user)
     {
-        NetworkServer.connections[_connections[_connections.Count - 1].connectionId].isReady = true;
+        NetworkServer.connections[id].isReady = true;
+
+        cantJug++;    
 
         foreach (var player in myPlayers)
         {
@@ -102,19 +112,21 @@ public class ServerManager : MonoBehaviour
 
         Player myPlayer = Instantiate(prefabPlayer).GetComponent<Player>();
         myPlayer.myname = user;
-        myPlayer.connectionId = _connections[_connections.Count - 1].connectionId;
+        myPlayer.connectionId = _connections.Where(x => x.connectionId == id).First().connectionId;
 
         PlayerPos(myPlayer);
 
-        myPlayers.Add(_connections[_connections.Count - 1].connectionId, myPlayer);
+        myPlayers.Add(id, myPlayer);
 
-        NetworkServer.SpawnWithClientAuthority(myPlayer.gameObject, _connections[_connections.Count - 1]);
+        NetworkServer.SpawnWithClientAuthority(myPlayer.gameObject, _connections.Where(x => x.connectionId == id).First());
 
         //Para sincronizar jugadores
         new PacketBase(PacketIDs.RefreshPlayers_Command).Add(ServerLogic.instance.values).Add(ServerLogic.instance.shootCoolDown).SendAsServer();
 
-        if (_connections.Count == 2)
+        if (cantJug == 2)
+        {
             new PacketBase(PacketIDs.GameStart_Command).SendAsServer();
+        }
     }
 
     private void Ondisconnect(NetworkMessage netMsg)
@@ -161,6 +173,8 @@ public class ServerManager : MonoBehaviour
         packetActions.Add(PacketIDs.Server_RestartButton, PacketExecutionServer.Server_RestartButton);
         packetActions.Add(PacketIDs.GetUserHighScore_Command, PacketExecutionServer.GetUserHighScore_Command);
         packetActions.Add(PacketIDs.GetHighScores_Command, PacketExecutionServer.GetHighScores_Command);
+        packetActions.Add(PacketIDs.FriendList_Command, PacketExecutionServer.FriendList_Command);
+        packetActions.Add(PacketIDs.UserReadyToPlay_Command, PacketExecutionServer.UserReadyToPlay_Command);
 
         for (short i = 1000; i < 1000 + (short)PacketIDs.Count; i++)
         {
@@ -241,4 +255,5 @@ public class ServerManager : MonoBehaviour
             PlayerPos(player.Value);
         }
     }
+
 }

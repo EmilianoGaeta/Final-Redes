@@ -39,9 +39,14 @@ public class ClientManager : MonoBehaviour
     public void Awake()
     {
         if (instance == null)
+        {
             instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
         else
             Destroy(gameObject);
+
+
     }
     void Start()
     {
@@ -62,6 +67,7 @@ public class ClientManager : MonoBehaviour
             Transform userypass = GameObject.Find("User y Pass").transform;
             _user = userypass.Find("User").GetComponent<InputField>();
             _password = userypass.Find("Pass").GetComponent<InputField>();
+            _password.inputType = InputField.InputType.Password;
 
             _ip = _networkUI.transform.Find("IP").GetComponent<InputField>();
         }
@@ -87,11 +93,8 @@ public class ClientManager : MonoBehaviour
 
     private void OnConnectPlayer(NetworkMessage netMsg)
     {
-        SceneManager.LoadScene("Menu");
-
         new PacketBase(PacketIDs.Server_CheckUser).SetConnectionID(myClient.connection.connectionId).Add(_user.text).Add(_password.text).SendAsClient();
     }
-
 
     private void AddPacketActions()
     {
@@ -108,6 +111,7 @@ public class ClientManager : MonoBehaviour
         packetActions.Add(PacketIDs.DisconnectRestart_Command, PacketExecutionClient.DisconnectRestart_Command);
         packetActions.Add(PacketIDs.FriendList_Command, PacketExecutionClient.Friend_List_Command);
         packetActions.Add(PacketIDs.WriteHighScore_Command, PacketExecutionClient.HighScore_Command);
+        packetActions.Add(PacketIDs.Conected_Command, PacketExecutionClient.Conected_Command);
 
         for (short i = 1000; i < 1000 + (short)PacketIDs.Count; i++)
         {
@@ -218,7 +222,7 @@ public class ClientManager : MonoBehaviour
     public void DisconnectRestart_Command()
     {
         myClient.Disconnect();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     public void FriendList_Command(string[] friendList)
     {
@@ -236,10 +240,33 @@ public class ClientManager : MonoBehaviour
             profile.WriteHighScore(highScores);
         }
     }
+    public void Conected_Command()
+    {
+        SceneManager.LoadScene("Menu");
+
+        new PacketBase(PacketIDs.GetUserHighScore_Command).SetConnectionID(ClientManager.myClient.connection.connectionId).Add("")
+        .SendAsClient();
+
+        new PacketBase(PacketIDs.FriendList_Command).SetConnectionID(ClientManager.myClient.connection.connectionId).Add(_user.text)
+        .SendAsClient();
+
+
+    }
+
+    public void StartGame()
+    {
+        SceneManager.LoadScene("Game");
+        new PacketBase(PacketIDs.UserReadyToPlay_Command).SetConnectionID(myClient.connection.connectionId).Add(_user.text)
+       .SendAsClient();
+    }
+    
+
 
     IEnumerator CountDown(int countStart)
     {
+        countdownText = GameObject.Find("CountdownText").GetComponent<Text>();
         countdownText.enabled = true;
+        waitingForOtherPlayer = GameObject.Find("WaitionfForPlayer");
         waitingForOtherPlayer.SetActive(false);
 
         var wait = new WaitForSeconds(1);

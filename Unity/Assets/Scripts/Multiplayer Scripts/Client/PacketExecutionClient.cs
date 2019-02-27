@@ -15,4 +15,5 @@ public static class PacketExecutionClient
     public static Action<PacketBase> DisconnectRestart_Command = packBase => ClientManager.instance.DisconnectRestart_Command();
     public static Action<PacketBase> Friend_List_Command = packBase => ClientManager.instance.FriendList_Command(packBase.stringInfo);
     public static Action<PacketBase> HighScore_Command = packBase => ClientManager.instance.HighScore_Command(packBase.stringInfo);
+    public static Action<PacketBase> Conected_Command = packBase => ClientManager.instance.Conected_Command();
 }

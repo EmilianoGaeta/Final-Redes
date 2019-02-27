@@ -9,6 +9,7 @@
     Server_RestartButton,
     GetUserHighScore_Command,
     GetHighScores_Command,
+    UserReadyToPlay_Command,
     //To Client
     StartPlayer_Command,
     UpdateAmmo_Command,
@@ -20,5 +21,6 @@
     DisconnectRestart_Command,
     FriendList_Command,
     WriteHighScore_Command,
+    Conected_Command,
     Count
 }

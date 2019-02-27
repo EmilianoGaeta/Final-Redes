@@ -93,4 +93,9 @@ public class ProfileManager : MonoBehaviour {
         .SendAsClient();
         }
     }
+
+    public void StartGame()
+    {
+        ClientManager.instance.StartGame();
+    }
 }
