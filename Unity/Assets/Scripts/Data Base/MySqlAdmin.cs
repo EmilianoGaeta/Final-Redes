@@ -40,6 +40,7 @@ public class MySqlAdmin : MonoBehaviour {
         return cmd.ExecuteReader();
     }
 
+
     public string CreateQuery(string query, string val1){
         return query.Replace("%1", val1);
     }

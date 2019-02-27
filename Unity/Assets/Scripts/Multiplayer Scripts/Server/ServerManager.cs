@@ -131,6 +131,8 @@ public class ServerManager : MonoBehaviour
 
     private void Ondisconnect(NetworkMessage netMsg)
     {
+        ServerLogic.instance.OnUserDisconected(netMsg.conn.connectionId);
+
         if (myPlayers.ContainsKey(netMsg.conn.connectionId))
         {
             Debug.Log("The player " + myPlayers[netMsg.conn.connectionId].myname + " is disconnected");
@@ -157,6 +159,8 @@ public class ServerManager : MonoBehaviour
         var walls = GameObject.FindObjectsOfType<DestroyableObject>();
         foreach (var wall in walls)
             NetworkServer.Destroy(wall.gameObject);
+
+
     }
 
     private void AddPacketActions()

@@ -15,6 +15,33 @@ public class UserCommandsFunc : MonoBehaviour
         _DBAdmin = FindObjectOfType<MySqlAdmin>();
     }
 
+
+    public void SetConnectionState(string user, string state, int connectionId)
+    {
+        MySqlDataReader res = _DBAdmin.ExecuteQuery(
+           _DBAdmin.CreateQuery(DBQueries.SET_CONNECTION_STATE,
+           user,state,connectionId.ToString())
+           );
+
+        res.Close();
+
+    }
+
+    public string DisconectUser(int connectionId)
+    {
+        MySqlDataReader res = _DBAdmin.ExecuteQuery(
+           _DBAdmin.CreateQuery(DBQueries.DISCONECT_USER, connectionId.ToString())
+           );
+        DataTable dat = new DataTable();
+        dat.Load(res);
+        var username = (string)dat.Rows[0][0];
+        res.Close();
+
+        return username;
+
+    }
+
+
     public Tuple<string[], string[], string[]> GetUserFriends(string user)
     {
         List<string> friends = new List<string>();

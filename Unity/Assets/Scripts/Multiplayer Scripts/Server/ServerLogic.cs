@@ -53,17 +53,25 @@ public class ServerLogic : MonoBehaviour
             new PacketBase(PacketIDs.Conected_Command)
           .SendAsServer(id);
 
+            _mysqlLogic.GetComponent<UserCommandsFunc>().SetConnectionState(user,"C",id);
 
-          //  ServerManager.instance.OnUserChecked(true, user);
-          //  var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user);
-          //  new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2)
-          //.SendAsServer(id);
-          //  Server_GetHighScores_Command(id);
+            //  ServerManager.instance.OnUserChecked(true, user);
+            //  var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user);
+            //  new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2)
+            //.SendAsServer(id);
+            //  Server_GetHighScores_Command(id);
 
         }
         else
             ServerManager.instance.OnUserChecked(false, user);
     }
+
+    public void OnUserDisconected(int id)
+    {
+        var sa = _mysqlLogic.GetComponent<UserCommandsFunc>().DisconectUser(id);
+        Debug.Log(sa);
+    }
+
     public void Server_FriendList(int id,string user)
     {
         var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user);
