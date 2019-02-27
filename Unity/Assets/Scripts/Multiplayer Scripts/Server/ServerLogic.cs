@@ -64,10 +64,10 @@ public class ServerLogic : MonoBehaviour
         else
             ServerManager.instance.OnUserChecked(false, user);
     }
-    internal void Server_FriendList(int id,string user)
+    public void Server_FriendList(int id,string user)
     {
         var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user);
-        new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2)
+        new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3)
       .SendAsServer(id);
     }
     //Set Player Values

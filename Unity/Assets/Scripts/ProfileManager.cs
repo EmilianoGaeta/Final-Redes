@@ -28,6 +28,7 @@ public class ProfileManager : MonoBehaviour {
     {
         List<string> friendsNames = new List<string>();
         List<string> friendsStates = new List<string>();
+        List<string> friendsConnectionStates = new List<string>();
 
         int i = 1;
 
@@ -42,8 +43,14 @@ public class ProfileManager : MonoBehaviour {
             friendsStates.Add(friendList[i]);
             i++;
         }
+        i++;
+        while (i < friendList.Length && friendList[i] != "/")
+        {
+            friendsConnectionStates.Add(friendList[i]);
+            i++;
+        }
 
-        var friends = friendsNames.Zip(friendsStates, (x,y)=> " " + y + "   " + x);
+        var friends = friendsNames.Zip(friendsConnectionStates, (x,y)=> " " + y.ToUpper() + "   " + x).Zip(friendsStates,(x,y) => x.PadRight(50) + "Estado: " + y.ToUpper());
 
         string text = "";
 

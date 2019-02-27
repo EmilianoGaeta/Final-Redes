@@ -226,6 +226,8 @@ public class ClientManager : MonoBehaviour
     }
     public void FriendList_Command(string[] friendList)
     {
+        Debug.Log("!sasad");
+
         var profile = GameObject.FindObjectOfType<ProfileManager>();
         if (profile != null)
         {

@@ -15,10 +15,11 @@ public class UserCommandsFunc : MonoBehaviour
         _DBAdmin = FindObjectOfType<MySqlAdmin>();
     }
 
-    public Tuple<string[], string[]> GetUserFriends(string user)
+    public Tuple<string[], string[], string[]> GetUserFriends(string user)
     {
         List<string> friends = new List<string>();
         List<string> friendsStates = new List<string>();
+        List<string> friendsConnectionStates = new List<string>();
 
         MySqlDataReader res = _DBAdmin.ExecuteQuery(
               _DBAdmin.CreateQuery(DBQueries.GET_USER_FRIENDS,
@@ -33,16 +34,35 @@ public class UserCommandsFunc : MonoBehaviour
             {
                 friends.Add((string)dat.Rows[i]["user2"]);
                 friendsStates.Add((string)dat.Rows[i]["state"]);
+
+                MySqlDataReader res2 = _DBAdmin.ExecuteQuery(
+             _DBAdmin.CreateQuery(DBQueries.GET_CONNECTION_STATE,
+             (string)dat.Rows[i]["user2"])
+             );
+                DataTable dat2 = new DataTable();
+                dat2.Load(res2);
+                friendsConnectionStates.Add((string)dat2.Rows[0]["connectedState"]);
+                res2.Close();
+
             }
             else
             {
                 friends.Add((string)dat.Rows[i]["user1"]);
                 friendsStates.Add((string)dat.Rows[i]["state"]);
+
+                MySqlDataReader res2 = _DBAdmin.ExecuteQuery(
+                _DBAdmin.CreateQuery(DBQueries.GET_CONNECTION_STATE,
+                (string)dat.Rows[i]["user1"])
+);
+                DataTable dat2 = new DataTable();
+                dat2.Load(res2);
+                friendsConnectionStates.Add((string)dat2.Rows[0]["connectedState"]);
+                res2.Close();
             }
         }
         res.Close();
 
-        return Tuple.Create<string[], string[]>(friends.ToArray(), friendsStates.ToArray());
+        return Tuple.Create<string[], string[], string[]>(friends.ToArray(), friendsStates.ToArray(),friendsConnectionStates.ToArray());
     }
 
     public string[] GetUserHighScores(string user)
