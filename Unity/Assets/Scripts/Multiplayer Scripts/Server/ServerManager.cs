@@ -112,7 +112,7 @@ public class ServerManager : MonoBehaviour
 
         Player myPlayer = Instantiate(prefabPlayer).GetComponent<Player>();
         myPlayer.myname = user;
-        myPlayer.connectionId = _connections.Where(x => x.connectionId == id).First().connectionId;
+        myPlayer.connectionId = id;
 
         PlayerPos(myPlayer);
 
