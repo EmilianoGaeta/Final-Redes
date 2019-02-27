@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -45,10 +46,17 @@ public class ServerLogic : MonoBehaviour
     }
 
     //Check user
-    public void Server_CheckUser(string user, string pass)
+    public void Server_CheckUser(int id,string user, string pass)
     {
         if (_mysqlLogic.GetComponent<LoginAndRegister>().LogIn(user, pass))
+        {
             ServerManager.instance.OnUserChecked(true, user);
+            var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user);
+            new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2)
+          .SendAsServer(id);
+
+            Server_GetHighScores_Command(id);
+        }
         else
             ServerManager.instance.OnUserChecked(false, user);
     }
@@ -182,5 +190,25 @@ public class ServerLogic : MonoBehaviour
             ServerManager.instance.Restart_Command();
             new PacketBase(PacketIDs.Restart_Command).SendAsServer();
         }
+    }
+
+    public void Server_GetUserHighScore_Command(int id,string user)
+    {
+        if (user == "")
+        {
+            Server_GetHighScores_Command(id);
+            return;
+        }
+
+        var scores = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserHighScores(user);
+        new PacketBase(PacketIDs.WriteHighScore_Command).Add(scores)
+        .SendAsServer(id);
+    }
+
+    public void Server_GetHighScores_Command(int id)
+    {
+        var scores = _mysqlLogic.GetComponent<UserCommandsFunc>().GetHighScores();
+        new PacketBase(PacketIDs.WriteHighScore_Command).Add(scores)
+        .SendAsServer(id);
     }
 }

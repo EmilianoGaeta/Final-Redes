@@ -87,14 +87,14 @@ public class ClientManager : MonoBehaviour
 
     private void OnConnectPlayer(NetworkMessage netMsg)
     {
-        SceneManager.LoadScene(SceneManager.GetSceneByName("Game").buildIndex);
+        SceneManager.LoadScene("Menu");
 
-        new PacketBase(PacketIDs.Server_CheckUser).Add(_user.text).Add(_password.text).SendAsClient();
+        new PacketBase(PacketIDs.Server_CheckUser).SetConnectionID(myClient.connection.connectionId).Add(_user.text).Add(_password.text).SendAsClient();
 
         //UI
-        _disconnect.SetActive(true);
-        GameObject.Find("User y Pass").SetActive(false);
-        waitingForOtherPlayer.SetActive(true);
+        //_disconnect.SetActive(true);
+        //GameObject.Find("User y Pass").SetActive(false);
+        //waitingForOtherPlayer.SetActive(true);
     }
 
 
@@ -112,6 +112,8 @@ public class ClientManager : MonoBehaviour
         packetActions.Add(PacketIDs.GameEnded_Command, PacketExecutionClient.GameEnded_Command);
         packetActions.Add(PacketIDs.Restart_Command, PacketExecutionClient.Restart_Command);
         packetActions.Add(PacketIDs.DisconnectRestart_Command, PacketExecutionClient.DisconnectRestart_Command);
+        packetActions.Add(PacketIDs.FriendList_Command, PacketExecutionClient.Friend_List_Command);
+        packetActions.Add(PacketIDs.WriteHighScore_Command, PacketExecutionClient.HighScore_Command);
 
         for (short i = 1000; i < 1000 + (short)PacketIDs.Count; i++)
         {
@@ -228,6 +230,22 @@ public class ClientManager : MonoBehaviour
     {
         myClient.Disconnect();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    public void FriendList_Command(string[] friendList)
+    {
+        var profile = GameObject.FindObjectOfType<ProfileManager>();
+        if (profile != null)
+        {
+            profile.WriteFriendList(friendList);
+        }
+    }
+    public void HighScore_Command(string[] highScores)
+    {
+        var profile = GameObject.FindObjectOfType<ProfileManager>();
+        if (profile != null)
+        {
+            profile.WriteHighScore(highScores);
+        }
     }
 
     IEnumerator CountDown(int countStart)

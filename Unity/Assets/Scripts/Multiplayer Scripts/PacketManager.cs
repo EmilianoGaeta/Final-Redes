@@ -8,6 +8,8 @@ public static class PacketManager
     {
         if (info.GetType().Equals(typeof(string)))
             return packet.AddString((string)(object)info);
+        else if (info.GetType().Equals(typeof(string[])))
+            return packet.AddStringArray((string[])(object)info);
         else if (info.GetType().Equals(typeof(float)))
             return packet.AddFloat((float)(object)info);
         else if (info.GetType().Equals(typeof(Vector3)))
@@ -26,6 +28,12 @@ public static class PacketManager
             return packet.AddType((TypeOfGun.myType)(object)info);
         else return packet;
     }
+    static public PacketBase SetConnectionID(this PacketBase packet, int id)
+    {
+        packet.connectionID = id;
+        return packet;
+    }
+
     static PacketBase AddInt(this PacketBase packet, int info)
     {
         var list = packet.intInfo != null ? packet.intInfo.ToList() : new List<int>();
@@ -86,6 +94,14 @@ public static class PacketManager
     {
         var list = packet.stringInfo != null ? packet.stringInfo.ToList() : new List<string>();
         list.Add(info);
+        packet.stringInfo = list.ToArray();
+        return packet;
+    }
+    static PacketBase AddStringArray(this PacketBase packet, string[] info)
+    {
+        var list = packet.stringInfo != null ? packet.stringInfo.ToList() : new List<string>();
+        list.Add("/");
+        list.AddRange(info);
         packet.stringInfo = list.ToArray();
         return packet;
     }

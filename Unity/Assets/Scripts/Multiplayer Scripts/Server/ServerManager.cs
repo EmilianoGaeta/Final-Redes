@@ -88,7 +88,11 @@ public class ServerManager : MonoBehaviour
         }
 
         print("Se conecto alguien con el ID: " + _connections[_connections.Count - 1].connectionId);
+        //PlayerReadyToGame(user);
+    }
 
+    private void PlayerReadyToGame(string user)
+    {
         NetworkServer.connections[_connections[_connections.Count - 1].connectionId].isReady = true;
 
         foreach (var player in myPlayers)
@@ -155,6 +159,8 @@ public class ServerManager : MonoBehaviour
         packetActions.Add(PacketIDs.Server_ChangeWeapon, PacketExecutionServer.Server_ChangeWeapon);
         packetActions.Add(PacketIDs.Server_Move, PacketExecutionServer.Server_Move);
         packetActions.Add(PacketIDs.Server_RestartButton, PacketExecutionServer.Server_RestartButton);
+        packetActions.Add(PacketIDs.GetUserHighScore_Command, PacketExecutionServer.GetUserHighScore_Command);
+        packetActions.Add(PacketIDs.GetHighScores_Command, PacketExecutionServer.GetHighScores_Command);
 
         for (short i = 1000; i < 1000 + (short)PacketIDs.Count; i++)
         {
