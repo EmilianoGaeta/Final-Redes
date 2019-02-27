@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 
 public class DestroyableObject : NetworkBehaviour
 {
-    [SyncVar]
+
     [HideInInspector]
     public int life;
     public int playerId;

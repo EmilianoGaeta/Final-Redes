@@ -47,16 +47,11 @@ public class ServerLogic : MonoBehaviour
     //Check user
     public void Server_CheckUser(string user, string pass)
     {
-        if (_mysqlLogic.GetComponent<LoginAndRegister>().LogIn(user,pass))
-        {
-            ServerManager.instance.OnUserChecked(true);
-        }
+        if (_mysqlLogic.GetComponent<LoginAndRegister>().LogIn(user, pass))
+            ServerManager.instance.OnUserChecked(true, user);
         else
-        {
-            ServerManager.instance.OnUserChecked(false);
-        }
+            ServerManager.instance.OnUserChecked(false, user);
     }
-
 
     //Set Player Values
     public void Server_StartPlayer(string name, int playerId)
@@ -150,13 +145,11 @@ public class ServerLogic : MonoBehaviour
     public void Server_Dammaged(int playerId, int damage)
     {
         ServerManager.instance.myPlayers[playerId].life -= damage;
-        ServerManager.instance.myPlayers[playerId].Damaged();
+        ServerManager.instance.myPlayers[playerId].ShowDamage();
 
-        var l = ServerManager.instance.myPlayers[playerId].life;
+        new PacketBase(PacketIDs.Damaged_Command).Add(playerId).SendAsServer();
 
-        new PacketBase(PacketIDs.Damaged_Command).Add(playerId).Add(l).SendAsServer();
-
-        if(l <= 0)
+        if(ServerManager.instance.myPlayers[playerId].life <= 0)
         {
             ServerManager.instance.GameEnded_Command(playerId);
             new PacketBase(PacketIDs.GameEnded_Command).Add(playerId).SendAsServer();

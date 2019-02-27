@@ -12,7 +12,6 @@ public class ClientManager : MonoBehaviour
 
     public static NetworkClient myClient;
     public static ClientManager instance;
-    public int maxPlayers = 2;
     public Text countdownText;
     public GameObject restartButton;
     public GameObject waitingForOtherPlayer;
@@ -27,7 +26,7 @@ public class ClientManager : MonoBehaviour
     private InputField _password;
     private InputField _user;
 
-    private List<NetworkConnection> _connections = new List<NetworkConnection>();
+    Dictionary<PacketIDs, Action<PacketBase>> packetActions = new Dictionary<PacketIDs, Action<PacketBase>>();
 
     public enum ConnectionType
     {
@@ -86,37 +85,6 @@ public class ClientManager : MonoBehaviour
         myClient.Connect(_ip.text, 8080);
     }
 
-    private void Ondisconnect(NetworkMessage netMsg)
-    {
-        if (myPlayers.ContainsKey(netMsg.conn.connectionId))
-        {
-            Debug.Log("The player " + myPlayers[netMsg.conn.connectionId].myname + " is disconnected");
-            NetworkServer.Destroy(myPlayers[netMsg.conn.connectionId].gameObject);
-            myPlayers.Remove(netMsg.conn.connectionId);
-            if(_connections.Count == 2)
-            {
-                for (int i = 0; i < _connections.Count; i++)
-                {
-                    if (netMsg.conn.connectionId == _connections[i].connectionId)
-                    {
-                        _connections.RemoveAt(i);
-                        new PacketBase(PacketIDs.DisconnectRestart_Command).SendAsServer();
-                        break;
-                    }
-                }
-            }
-            else if(_connections.Count == 1)
-            {
-                _connections.Clear();
-            }
-        }
-
-        var walls = GameObject.FindObjectsOfType<DestroyableObject>();
-        foreach (var wall in walls)
-            NetworkServer.Destroy(wall.gameObject);
-    }
-
-
     private void OnConnectPlayer(NetworkMessage netMsg)
     {
         SceneManager.LoadScene(SceneManager.GetSceneByName("Game").buildIndex);
@@ -151,6 +119,17 @@ public class ClientManager : MonoBehaviour
         }
     }
 
+    private void OnPacketReceived(NetworkMessage netMsg)
+    {
+        PacketBase msg = netMsg.ReadMessage<PacketBase>();
+        msg.connectionID = netMsg.conn.connectionId;
+
+        if (packetActions.ContainsKey((PacketIDs)msg.messageID))
+            packetActions[(PacketIDs)msg.messageID](msg);
+    }
+
+
+    //Player
     private void PlayerPos(Player myPlayer)
     {
         if (myPlayer.connectionId == 1)
@@ -164,17 +143,6 @@ public class ClientManager : MonoBehaviour
             myPlayer.transform.position = new Vector3(8, 0, 0);
             myPlayer.transform.eulerAngles = new Vector3(0, 0, 180);
         }
-    }
-
-    Dictionary<PacketIDs, Action<PacketBase>> packetActions = new Dictionary<PacketIDs, Action<PacketBase>>();
-
-    private void OnPacketReceived(NetworkMessage netMsg)
-    {
-        PacketBase msg = netMsg.ReadMessage<PacketBase>();
-        msg.connectionID = netMsg.conn.connectionId;
-
-        if (packetActions.ContainsKey((PacketIDs)msg.messageID))
-            packetActions[(PacketIDs)msg.messageID](msg);
     }
 
     public void StartAPlayer_Command(string name, int[] values, float shootCoolDown)
@@ -215,10 +183,9 @@ public class ClientManager : MonoBehaviour
         myPlayers[playerid].ChangeWeapon(weapon);
     }
 
-    public void PlayerDammaged_Command(int playerId, int amount)
+    public void PlayerDammaged_Command(int playerId)
     {
-        myPlayers[playerId].life = amount;
-        myPlayers[playerId].Damaged();
+        myPlayers[playerId].ShowDamage();
     }
 
     public void GameEnded_Command(int playerId)

@@ -9,7 +9,6 @@ public class Grenade : NetworkBehaviour
 
     public Explosion explosion;
 
-    [SyncVar]
     [HideInInspector]
     public int life;
     public int playerId;

@@ -20,6 +20,7 @@ public class ServerManager : MonoBehaviour
 
     private GameObject _disconnect;
 
+    Dictionary<PacketIDs, Action<PacketBase>> packetActions = new Dictionary<PacketIDs, Action<PacketBase>>();
 
     private List<NetworkConnection> _connections = new List<NetworkConnection>();
 
@@ -77,7 +78,7 @@ public class ServerManager : MonoBehaviour
         _connections.Add(netMsg.conn);
     }
 
-    public void OnUserChecked(bool acepted)
+    public void OnUserChecked(bool acepted, string user)
     {
         if (!acepted)
         {
@@ -96,6 +97,7 @@ public class ServerManager : MonoBehaviour
         }
 
         Player myPlayer = Instantiate(prefabPlayer).GetComponent<Player>();
+        myPlayer.myname = user;
         myPlayer.connectionId = _connections[_connections.Count - 1].connectionId;
 
         PlayerPos(myPlayer);
@@ -160,6 +162,17 @@ public class ServerManager : MonoBehaviour
         }
     }
 
+    private void OnPacketReceived(NetworkMessage netMsg)
+    {
+        PacketBase msg = netMsg.ReadMessage<PacketBase>();
+        msg.connectionID = netMsg.conn.connectionId;
+
+        if (packetActions.ContainsKey((PacketIDs)msg.messageID))
+            packetActions[(PacketIDs)msg.messageID](msg);
+    }
+
+
+    //Player
     private void PlayerPos(Player myPlayer)
     {
         if (myPlayer.connectionId == 1)
@@ -173,17 +186,6 @@ public class ServerManager : MonoBehaviour
             myPlayer.transform.position = new Vector3(8, 0, 0);
             myPlayer.transform.eulerAngles = new Vector3(0, 0, 180);
         }
-    }
-
-    Dictionary<PacketIDs, Action<PacketBase>> packetActions = new Dictionary<PacketIDs, Action<PacketBase>>();
-
-    private void OnPacketReceived(NetworkMessage netMsg)
-    {
-        PacketBase msg = netMsg.ReadMessage<PacketBase>();
-        msg.connectionID = netMsg.conn.connectionId;
-
-        if (packetActions.ContainsKey((PacketIDs)msg.messageID))
-            packetActions[(PacketIDs)msg.messageID](msg);
     }
 
     public void StartAPlayer_Command(string name, int[] values, float shootCoolDown)
@@ -206,23 +208,6 @@ public class ServerManager : MonoBehaviour
                 player.OnServerStart(player.myname, player.connectionId, values, shootCoolDown);
             }
         }
-    }
-
-    public void UpdateAmmo_Command(TypeOfGun.myType type, int playerid, int less)
-    {
-        myPlayers[playerid].ammoAmount[type] -= less;
-        myPlayers[playerid].UpdateAmmo();
-    }
-
-    public void ChangeWeapon_Command(int playerid, int weapon)
-    {
-        myPlayers[playerid].ChangeWeapon(weapon);
-    }
-
-    public void PlayerDammaged_Command(int playerId, int amount)
-    {
-        myPlayers[playerId].life = amount;
-        myPlayers[playerId].Damaged();
     }
 
     public void GameEnded_Command(int playerId)
@@ -249,11 +234,5 @@ public class ServerManager : MonoBehaviour
         {
             PlayerPos(player.Value);
         }
-    }
-
-    public void DisconnectRestart_Command()
-    {
-        myClient.Disconnect();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

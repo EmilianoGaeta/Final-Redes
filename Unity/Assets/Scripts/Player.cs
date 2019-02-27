@@ -7,21 +7,18 @@ using UnityEngine.UI;
 
 public class Player : NetworkBehaviour {
 
-    
     [SyncVar]
     public int connectionId;
     [SyncVar]
     public string myname;
+    [SyncVar]
+    public int life;
 
     public TypeOfGun gun;
-
-    [HideInInspector]
-    public int life;
 
     private float _speed;
     private float _shootCoolDown;
     private float _shoottimer;
-
 
     private Rigidbody _rb;
     public float _initialLife;
@@ -51,8 +48,6 @@ public class Player : NetworkBehaviour {
         gun.gameObject.SetActive(true);
 
         var netWorkUI = GameObject.Find("NetWork UI");
-        var n = netWorkUI.transform.Find("Name").GetComponent<InputField>().text;
-        myname = n != "" ? n : "Player_" + connectionId;
 
         netWorkUI.SetActive(false);
 
@@ -197,7 +192,7 @@ public class Player : NetworkBehaviour {
         this.connectionId = id;
     }
 
-    public void Damaged()
+    public void ShowDamage()
     {
         _lifeBar.fillAmount = life / _initialLife;
     }
