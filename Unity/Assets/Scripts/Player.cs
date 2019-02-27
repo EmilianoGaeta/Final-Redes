@@ -11,7 +11,7 @@ public class Player : NetworkBehaviour {
     public int connectionId;
     [SyncVar]
     public string myname;
-    [SyncVar]
+    [SyncVar(hook = "OnShowDamage")]
     public int life;
 
     public TypeOfGun gun;
@@ -192,9 +192,12 @@ public class Player : NetworkBehaviour {
         this.connectionId = id;
     }
 
-    public void ShowDamage()
+    public void OnShowDamage(int life)
     {
-        _lifeBar.fillAmount = life / _initialLife;
+        if (_lifeBar != null)
+        {
+            _lifeBar.fillAmount = life / _initialLife;
+        }
     }
 
     private Vector3 GetDestination()

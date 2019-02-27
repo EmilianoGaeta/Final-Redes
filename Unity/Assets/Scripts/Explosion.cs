@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using System;
 
 public class Explosion : NetworkBehaviour
 {
-    [HideInInspector]
+
     public int damage;
 
     private float _timer;
+    private Action<int, int> Server_Dammaged;
 
     // Use this for initialization
     void Start()
@@ -36,14 +38,15 @@ public class Explosion : NetworkBehaviour
             var player = other.GetComponent<Player>();
             if (player != null)
             {
-                ServerLogic.instance.Server_Dammaged(player.connectionId, damage);
+                Server_Dammaged(player.connectionId, damage);
             }
         }
     }
 
-    public Explosion Setup(int damage)
+    public Explosion Setup(int damage, Action<int, int> Server_Dammaged)
     {
         this.damage = damage;
+        this.Server_Dammaged = Server_Dammaged;
         return this;
     }
 }

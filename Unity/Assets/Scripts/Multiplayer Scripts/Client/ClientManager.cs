@@ -90,11 +90,6 @@ public class ClientManager : MonoBehaviour
         SceneManager.LoadScene("Menu");
 
         new PacketBase(PacketIDs.Server_CheckUser).SetConnectionID(myClient.connection.connectionId).Add(_user.text).Add(_password.text).SendAsClient();
-
-        //UI
-        //_disconnect.SetActive(true);
-        //GameObject.Find("User y Pass").SetActive(false);
-        //waitingForOtherPlayer.SetActive(true);
     }
 
 
@@ -108,7 +103,6 @@ public class ClientManager : MonoBehaviour
         packetActions.Add(PacketIDs.UpdateAmmo_Command, PacketExecutionClient.UpdateAmmo_Comand);
         packetActions.Add(PacketIDs.ChangeWeapon_Command, PacketExecutionClient.ChangeWeapon_Command);
         packetActions.Add(PacketIDs.GameStart_Command, PacketExecutionClient.GameStart_Command);
-        packetActions.Add(PacketIDs.Damaged_Command, PacketExecutionClient.Damaged_Command);
         packetActions.Add(PacketIDs.GameEnded_Command, PacketExecutionClient.GameEnded_Command);
         packetActions.Add(PacketIDs.Restart_Command, PacketExecutionClient.Restart_Command);
         packetActions.Add(PacketIDs.DisconnectRestart_Command, PacketExecutionClient.DisconnectRestart_Command);
@@ -183,11 +177,6 @@ public class ClientManager : MonoBehaviour
     public void ChangeWeapon_Command(int playerid, int weapon)
     {
         myPlayers[playerid].ChangeWeapon(weapon);
-    }
-
-    public void PlayerDammaged_Command(int playerId)
-    {
-        myPlayers[playerId].ShowDamage();
     }
 
     public void GameEnded_Command(int playerId)

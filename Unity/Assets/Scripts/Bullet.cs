@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using System;
 
 public class Bullet : NetworkBehaviour
 {
-
+    public int damage;
     public int playerId;
 
     private float _speed;
-    [HideInInspector]
-    public int damage;
+    private Action<int, int> Server_Dammaged;
 
     // Use this for initialization
     void Start()
@@ -35,7 +35,7 @@ public class Bullet : NetworkBehaviour
             {
                 if (player.connectionId != playerId)
                 {
-                    ServerLogic.instance.Server_Dammaged(player.connectionId, damage);
+                    Server_Dammaged(player.connectionId, damage);
                     NetworkServer.Destroy(gameObject);
                 }
             }
@@ -49,10 +49,11 @@ public class Bullet : NetworkBehaviour
         }
     }
 
-    public Bullet Setup(float speed, int damage)
+    public Bullet Setup(float speed, int damage, Action<int, int> Server_Dammaged)
     {
         _speed = speed;
         this.damage = damage;
+        this.Server_Dammaged = Server_Dammaged;
         return this;
     }
 }

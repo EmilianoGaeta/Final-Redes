@@ -5,10 +5,9 @@ using UnityEngine.Networking;
 
 public class DestroyableObject : NetworkBehaviour
 {
-
-    [HideInInspector]
-    public int life;
     public int playerId;
+
+    private int _life;
 
     void Start()
     {
@@ -19,7 +18,7 @@ public class DestroyableObject : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (life <= 0)
+        if (_life <= 0)
         {
             NetworkServer.Destroy(gameObject);
         }
@@ -47,12 +46,12 @@ public class DestroyableObject : NetworkBehaviour
 
     void Damage(int damage)
     {
-        life -= damage;
+        _life -= damage;
     }
 
     public DestroyableObject Setup(int life)
     {
-        this.life = life;
+        _life = life;
         return this;
     }
 }

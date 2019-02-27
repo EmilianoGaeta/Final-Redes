@@ -2,21 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using System;
 
 public class Grenade : NetworkBehaviour
 {
-    
+
 
     public Explosion explosion;
-
-    [HideInInspector]
-    public int life;
     public int playerId;
+    public int damage;
 
-    public Vector3 moveVector;
-
+    private Vector3 _moveVector;
     private float _speed;
-    private int _damage;
+    private Action<int, int> Server_Dammaged;
+    private int _life;
 
     void Start()
     {
@@ -27,8 +26,8 @@ public class Grenade : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.position += moveVector * _speed * Time.deltaTime;
-        if (life <= 0)
+        transform.position += _moveVector * _speed * Time.deltaTime;
+        if (_life <= 0)
         {
             Explode();
             NetworkServer.Destroy(gameObject);
@@ -73,21 +72,23 @@ public class Grenade : NetworkBehaviour
 
     void Damaged(int damage)
     {
-        life -= damage;
+        _life -= damage;
     }
     void Explode()
     {
         Explosion e = Instantiate(explosion);
         e.transform.position = transform.position;
-        e.Setup(_damage);
+        e.Setup(damage, Server_Dammaged);
         NetworkServer.Spawn(e.gameObject);
     }
 
-    public Grenade Setup(float speed,int life, int damage)
+    public Grenade Setup(float speed, int life, int damage, Action<int, int> Server_Dammaged, Vector3 moveVector)
     {
         _speed = speed;
-        this.life = life;
-        _damage = damage;
+        _moveVector = moveVector;
+        _life = life;
+        this.damage = damage;
+        this.Server_Dammaged = Server_Dammaged;
         return this;
     }
 }

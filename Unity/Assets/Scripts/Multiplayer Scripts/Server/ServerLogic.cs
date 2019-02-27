@@ -100,7 +100,7 @@ public class ServerLogic : MonoBehaviour
         bullet.transform.position = player.gun.transform.GetChild(0).transform.position;
         bullet.transform.right = player.gun.transform.GetChild(0).transform.right;
         bullet.playerId = player.connectionId;
-        bullet.Setup(bulletSpeed, bulletDamage);
+        bullet.Setup(bulletSpeed, bulletDamage, Server_Dammaged);
         NetworkServer.Spawn(bullet.gameObject);
     }
 
@@ -110,8 +110,7 @@ public class ServerLogic : MonoBehaviour
         grenade.playerId = player.connectionId;
         grenade.transform.position = player.gun.transform.position;
         grenade.transform.right = player.transform.right;
-        grenade.moveVector = player.transform.right;
-        grenade.Setup(grenadeSpeed, grenadeLife, grenadeDamage);
+        grenade.Setup(grenadeSpeed, grenadeLife, grenadeDamage, Server_Dammaged, player.transform.right);
         NetworkServer.Spawn(grenade.gameObject);
     }
 
@@ -153,9 +152,6 @@ public class ServerLogic : MonoBehaviour
     public void Server_Dammaged(int playerId, int damage)
     {
         ServerManager.instance.myPlayers[playerId].life -= damage;
-        ServerManager.instance.myPlayers[playerId].ShowDamage();
-
-        new PacketBase(PacketIDs.Damaged_Command).Add(playerId).SendAsServer();
 
         if(ServerManager.instance.myPlayers[playerId].life <= 0)
         {

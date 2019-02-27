@@ -15,7 +15,6 @@
     ChangeWeapon_Command,
     GameStart_Command,
     RefreshPlayers_Command,
-    Damaged_Command,
     GameEnded_Command,
     Restart_Command,
     DisconnectRestart_Command,
