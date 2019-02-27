@@ -65,7 +65,7 @@ public class SyncTransform : NetworkBehaviour
 
     void LerpPosition()
     {
-        if (MultiplayerManager.instance.connectionType == MultiplayerManager.ConnectionType.Server)
+        if (isServer)
         {
             if(allowSyncPos)
                 syncPos = transform.position;

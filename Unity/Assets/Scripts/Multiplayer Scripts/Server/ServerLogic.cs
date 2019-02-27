@@ -41,7 +41,7 @@ public class ServerLogic : MonoBehaviour
     }
     void Start()
     {
-        _restartCount = MultiplayerManager.instance.maxPlayers;
+        _restartCount = ServerManager.instance.maxPlayers;
     }
 
     //Check user
@@ -49,11 +49,11 @@ public class ServerLogic : MonoBehaviour
     {
         if (_mysqlLogic.GetComponent<LoginAndRegister>().LogIn(user,pass))
         {
-            MultiplayerManager.instance.OnUserChecked(true);
+            ServerManager.instance.OnUserChecked(true);
         }
         else
         {
-            MultiplayerManager.instance.OnUserChecked(false);
+            ServerManager.instance.OnUserChecked(false);
         }
     }
 
@@ -61,16 +61,16 @@ public class ServerLogic : MonoBehaviour
     //Set Player Values
     public void Server_StartPlayer(string name, int playerId)
     {
-        MultiplayerManager.instance.myPlayers[playerId].OnServerStart(name, playerId, values, shootCoolDown);
-        MultiplayerManager.instance.myPlayers[playerId].CanPlay(false);
-        new PacketBase(MultiplayerManager.PacketIDs.StartPlayer_Command).Add(name).Add(playerId).Add(values).Add(shootCoolDown).SendAsServer();
+        ServerManager.instance.myPlayers[playerId].OnServerStart(name, playerId, values, shootCoolDown);
+        ServerManager.instance.myPlayers[playerId].CanPlay(false);
+        new PacketBase(PacketIDs.StartPlayer_Command).Add(name).Add(playerId).Add(values).Add(shootCoolDown).SendAsServer();
     }
 
 
     //Shoot
     public void Server_ShootCommand(TypeOfGun.myType type, int playerId)
     {
-        var player = MultiplayerManager.instance.myPlayers[playerId];
+        var player = ServerManager.instance.myPlayers[playerId];
 
         if (type == TypeOfGun.myType.pistol)
         {
@@ -88,12 +88,12 @@ public class ServerLogic : MonoBehaviour
         player.ammoAmount[type]--;
         player.UpdateAmmo();
 
-        new PacketBase(MultiplayerManager.PacketIDs.UpdateAmmo_Command).Add(type).Add(playerId).Add(1).SendAsServer();
+        new PacketBase(PacketIDs.UpdateAmmo_Command).Add(type).Add(playerId).Add(1).SendAsServer();
     }
 
     void PlayerShoot(Player player, TypeOfGun.myType type)
     {
-        Bullet bullet = Instantiate(MultiplayerManager.instance.objectsToSpawn[0]).GetComponent<Bullet>();
+        Bullet bullet = Instantiate(ServerManager.instance.objectsToSpawn[0]).GetComponent<Bullet>();
         bullet.transform.position = player.gun.transform.GetChild(0).transform.position;
         bullet.transform.right = player.gun.transform.GetChild(0).transform.right;
         bullet.playerId = player.connectionId;
@@ -103,7 +103,7 @@ public class ServerLogic : MonoBehaviour
 
     void PlayerThrowGrenade(Player player, TypeOfGun.myType type)
     {
-        Grenade grenade = Instantiate(MultiplayerManager.instance.objectsToSpawn[1]).GetComponent<Grenade>();
+        Grenade grenade = Instantiate(ServerManager.instance.objectsToSpawn[1]).GetComponent<Grenade>();
         grenade.playerId = player.connectionId;
         grenade.transform.position = player.gun.transform.position;
         grenade.transform.right = player.transform.right;
@@ -114,7 +114,7 @@ public class ServerLogic : MonoBehaviour
 
     void PlayerSpawnBox(Player player, TypeOfGun.myType type)
     {
-        DestroyableObject smallBox = Instantiate(MultiplayerManager.instance.objectsToSpawn[2]).GetComponent<DestroyableObject>();
+        DestroyableObject smallBox = Instantiate(ServerManager.instance.objectsToSpawn[2]).GetComponent<DestroyableObject>();
         smallBox.transform.position = player.gun.transform.position;
         smallBox.transform.right = player.transform.right;
         smallBox.playerId = player.connectionId;
@@ -124,7 +124,7 @@ public class ServerLogic : MonoBehaviour
 
     void PlayerSpawnLargeBox(Player player, TypeOfGun.myType type)
     {
-        DestroyableObject largeBox = Instantiate(MultiplayerManager.instance.objectsToSpawn[3]).GetComponent<DestroyableObject>();
+        DestroyableObject largeBox = Instantiate(ServerManager.instance.objectsToSpawn[3]).GetComponent<DestroyableObject>();
         largeBox.transform.position = player.gun.transform.position;
         largeBox.transform.right = player.transform.right;
         largeBox.playerId = player.connectionId;
@@ -134,14 +134,14 @@ public class ServerLogic : MonoBehaviour
 
     public void Server_ChangeWeapon(int playerid, int weapon)
     {
-        MultiplayerManager.instance.myPlayers[playerid].ChangeWeapon(weapon);
-        new PacketBase(MultiplayerManager.PacketIDs.ChangeWeapon_Command).Add(playerid).Add(weapon).SendAsServer();
+        ServerManager.instance.myPlayers[playerid].ChangeWeapon(weapon);
+        new PacketBase(PacketIDs.ChangeWeapon_Command).Add(playerid).Add(weapon).SendAsServer();
     }
 
     //Move
     public void ServerMove(int playerId, float horizontal, float vertical, Vector3 viewDir)
     {
-        var player = MultiplayerManager.instance.myPlayers[playerId];
+        var player = ServerManager.instance.myPlayers[playerId];
         player.View(viewDir);
         player.Move(horizontal, vertical);
     }
@@ -149,17 +149,17 @@ public class ServerLogic : MonoBehaviour
     //Damage
     public void Server_Dammaged(int playerId, int damage)
     {
-        MultiplayerManager.instance.myPlayers[playerId].life -= damage;
-        MultiplayerManager.instance.myPlayers[playerId].Damaged();
+        ServerManager.instance.myPlayers[playerId].life -= damage;
+        ServerManager.instance.myPlayers[playerId].Damaged();
 
-        var l = MultiplayerManager.instance.myPlayers[playerId].life;
+        var l = ServerManager.instance.myPlayers[playerId].life;
 
-        new PacketBase(MultiplayerManager.PacketIDs.Damaged_Command).Add(playerId).Add(l).SendAsServer();
+        new PacketBase(PacketIDs.Damaged_Command).Add(playerId).Add(l).SendAsServer();
 
         if(l <= 0)
         {
-            MultiplayerManager.instance.GameEnded_Command(playerId);
-            new PacketBase(MultiplayerManager.PacketIDs.GameEnded_Command).Add(playerId).SendAsServer();
+            ServerManager.instance.GameEnded_Command(playerId);
+            new PacketBase(PacketIDs.GameEnded_Command).Add(playerId).SendAsServer();
         }
     }
 
@@ -170,25 +170,24 @@ public class ServerLogic : MonoBehaviour
 
         if (_restartCount <= 0)
         {
-            _restartCount = MultiplayerManager.instance.maxPlayers;
+            _restartCount = ServerManager.instance.maxPlayers;
 
             var walls = GameObject.FindObjectsOfType<DestroyableObject>();
             foreach (var wall in walls)
                 NetworkServer.Destroy(wall.gameObject);
 
-            new PacketBase(MultiplayerManager.PacketIDs.GameStart_Command).SendAsServer();
-            MultiplayerManager.instance.GameStart_Command();
+            new PacketBase(PacketIDs.GameStart_Command).SendAsServer();
 
             //Reser values
-            foreach (var player in MultiplayerManager.instance.myPlayers)
+            foreach (var player in ServerManager.instance.myPlayers)
             {
                 player.Value.OnServerStart(player.Value.myname, player.Value.connectionId, values, shootCoolDown);
-                new PacketBase(MultiplayerManager.PacketIDs.StartPlayer_Command).Add(player.Value.myname).Add(player.Value.connectionId).Add(values).Add(shootCoolDown).SendAsServer();
+                new PacketBase(PacketIDs.StartPlayer_Command).Add(player.Value.myname).Add(player.Value.connectionId).Add(values).Add(shootCoolDown).SendAsServer();
             }
 
             //Reset position
-            MultiplayerManager.instance.Restart_Command();
-            new PacketBase(MultiplayerManager.PacketIDs.Restart_Command).SendAsServer();
+            ServerManager.instance.Restart_Command();
+            new PacketBase(PacketIDs.Restart_Command).SendAsServer();
         }
     }
 }

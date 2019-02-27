@@ -118,30 +118,8 @@ public static class PacketManager
         packetID += packet.messageID;
 
         if (reliable)
-            MultiplayerManager.myClient.Send(packetID, packet);
+            ClientManager.myClient.Send(packetID, packet);
         else
-            MultiplayerManager.myClient.SendUnreliable(packetID, packet);
-    }
-
-    public static void Send(this PacketBase packet, bool reliable = true, int connId = -1)
-    {
-        short packetID = 1000;
-        packetID += packet.messageID;
-
-        if (MultiplayerManager.instance.connectionType == MultiplayerManager.ConnectionType.Server)
-        {
-            if (connId != -1)
-                NetworkServer.SendToClient(connId, packetID, packet);
-            else
-                if (reliable)
-                NetworkServer.SendToAll(packetID, packet);
-            else
-                NetworkServer.SendUnreliableToAll(packetID, packet);
-        }
-        else if (MultiplayerManager.instance.connectionType == MultiplayerManager.ConnectionType.Client)
-            if (reliable)
-                MultiplayerManager.myClient.Send(packetID, packet);
-            else
-                MultiplayerManager.myClient.SendUnreliable(packetID, packet);
+            ClientManager.myClient.SendUnreliable(packetID, packet);
     }
 }

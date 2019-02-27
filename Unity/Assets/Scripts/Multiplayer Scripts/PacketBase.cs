@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 public class PacketBase : MessageBase
 {
-    public PacketBase(MultiplayerManager.PacketIDs ids)
+    public PacketBase(PacketIDs ids)
     {
         messageID = (short)ids;
     }

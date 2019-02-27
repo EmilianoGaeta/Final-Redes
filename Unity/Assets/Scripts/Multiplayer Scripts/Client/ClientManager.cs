@@ -6,13 +6,12 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 
-public class MultiplayerManager : MonoBehaviour
+public class ClientManager : MonoBehaviour
 {
     public Dictionary<int, Player> myPlayers = new Dictionary<int, Player>();
 
-    public ConnectionType connectionType;
     public static NetworkClient myClient;
-    public static MultiplayerManager instance;
+    public static ClientManager instance;
     public int maxPlayers = 2;
     public Text countdownText;
     public GameObject restartButton;
@@ -38,27 +37,6 @@ public class MultiplayerManager : MonoBehaviour
         Both
     }
 
-    public enum PacketIDs : short
-    {
-        //To Server
-        Server_CheckUser,
-        Server_StartPlayer,
-        Server_ShootCommand,
-        Server_ChangeWeapon,
-        Server_Move,
-        Server_RestartButton,
-        //To Client
-        StartPlayer_Command,
-        UpdateAmmo_Command,
-        ChangeWeapon_Command,
-        GameStart_Command,
-        RefreshPlayers_Command,
-        Damaged_Command,
-        GameEnded_Command,
-        Restart_Command,
-        DisconnectRestart_Command,
-        Count
-    }
     public void Awake()
     {
         if (instance == null)
@@ -89,7 +67,6 @@ public class MultiplayerManager : MonoBehaviour
             _ip = _networkUI.transform.Find("IP").GetComponent<InputField>();
         }
 
-
         _disconnect.SetActive(false);
 
     }
@@ -97,97 +74,17 @@ public class MultiplayerManager : MonoBehaviour
 
     public void Disconnect()
     {
-        if (connectionType == ConnectionType.Server)
-        {
-            NetworkServer.Shutdown();
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }
-        else if(connectionType == ConnectionType.Client)
-        {
-            myClient.Disconnect();
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }
-    }
-
-    public void SetupServer()
-    {
-        connectionType = ConnectionType.Server;
-
-        packetActions = new Dictionary<PacketIDs, Action<PacketBase>>();
-        AddPacketActions();
-
-        ConnectionConfig config = new ConnectionConfig();
-        config.AddChannel(QosType.ReliableSequenced);
-        config.AddChannel(QosType.Unreliable);
-        NetworkServer.Configure(config, maxPlayers);
-        NetworkServer.Listen(8080);
-
-        myClient = ClientScene.ConnectLocalServer();
-
-        _networkUI.SetActive(false);
-        _disconnect.SetActive(true);
+        myClient.Disconnect();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void SetupClient()
     {
-        connectionType = ConnectionType.Client;
         packetActions = new Dictionary<PacketIDs, Action<PacketBase>>();
         myClient = new NetworkClient();
         AddPacketActions();
         myClient.Connect(_ip.text, 8080);
     }
-
-    private void OnConnect(NetworkMessage netMsg)
-    {      
-
-        if (NetworkServer.connections.Count == 1)
-        {
-            print("Server Initialized");
-            return;
-        }
-        _connections.Add(netMsg.conn);
-    }
-    public void OnUserChecked(bool acepted)
-    {
-        if (!acepted)
-        {
-            _connections.RemoveAt(_connections.Count - 1);
-            new PacketBase(MultiplayerManager.PacketIDs.DisconnectRestart_Command).SendAsServer();
-            return;
-        }
-
-        if(connectionType == ConnectionType.Client) SceneManager.LoadScene(SceneManager.GetSceneByName("Login").buildIndex);
-
-        print("Se conecto alguien con el ID: " + _connections[_connections.Count - 1].connectionId);
-
-        NetworkServer.connections[_connections[_connections.Count - 1].connectionId].isReady = true;
-
-        foreach (var player in myPlayers)
-        {
-            NetworkServer.SpawnWithClientAuthority(player.Value.gameObject, NetworkServer.connections[player.Key]);
-        }
-
-        Player myPlayer = Instantiate(prefabPlayer).GetComponent<Player>();
-        myPlayer.connectionId = _connections[_connections.Count - 1].connectionId;
-
-        PlayerPos(myPlayer);
-
-        myPlayers.Add(_connections[_connections.Count - 1].connectionId, myPlayer);
-
-        NetworkServer.SpawnWithClientAuthority(myPlayer.gameObject, _connections[_connections.Count - 1]);
-
-        //Para sincronizar jugadores
-        new PacketBase(MultiplayerManager.PacketIDs.RefreshPlayers_Command).Add(ServerLogic.instance.values).Add(ServerLogic.instance.shootCoolDown)
-            .SendAsServer();
-
-        if (_connections.Count == 2)
-        {
-            new PacketBase(MultiplayerManager.PacketIDs.GameStart_Command).SendAsServer();
-            StartCoroutine(CountDown(3));
-        }
-    }
-
-
 
     private void Ondisconnect(NetworkMessage netMsg)
     {
@@ -203,7 +100,7 @@ public class MultiplayerManager : MonoBehaviour
                     if (netMsg.conn.connectionId == _connections[i].connectionId)
                     {
                         _connections.RemoveAt(i);
-                        new PacketBase(MultiplayerManager.PacketIDs.DisconnectRestart_Command).SendAsServer();
+                        new PacketBase(PacketIDs.DisconnectRestart_Command).SendAsServer();
                         break;
                     }
                 }
@@ -222,7 +119,9 @@ public class MultiplayerManager : MonoBehaviour
 
     private void OnConnectPlayer(NetworkMessage netMsg)
     {
-        new PacketBase(MultiplayerManager.PacketIDs.Server_CheckUser).Add(_user.text).Add(_password.text).SendAsClient();
+        SceneManager.LoadScene(SceneManager.GetSceneByName("Game").buildIndex);
+
+        new PacketBase(PacketIDs.Server_CheckUser).Add(_user.text).Add(_password.text).SendAsClient();
 
         //UI
         _disconnect.SetActive(true);
@@ -233,50 +132,22 @@ public class MultiplayerManager : MonoBehaviour
 
     private void AddPacketActions()
     {
-        if (connectionType == ConnectionType.Server)
-        {
-            NetworkServer.RegisterHandler(MsgType.Connect, OnConnect);
-            NetworkServer.RegisterHandler(MsgType.Disconnect, Ondisconnect);
+        myClient.RegisterHandler(MsgType.Connect, OnConnectPlayer);
 
-            //Packets Server
-            packetActions.Add(PacketIDs.Server_CheckUser, PacketExecution.Server_CheckUser);
-            packetActions.Add(PacketIDs.Server_StartPlayer, PacketExecution.Server_StartPlayer);
-            packetActions.Add(PacketIDs.Server_ShootCommand, PacketExecution.Server_ShootCommand);
-            packetActions.Add(PacketIDs.Server_ChangeWeapon, PacketExecution.Server_ChangeWeapon);
-            packetActions.Add(PacketIDs.Server_Move, PacketExecution.Server_Move);
-            packetActions.Add(PacketIDs.Server_RestartButton, PacketExecution.Server_RestartButton);
-        }
-        else if(connectionType == ConnectionType.Client)
-        {
-            myClient.RegisterHandler(MsgType.Connect, OnConnectPlayer);
-
-            //Packets Client
-            packetActions.Add(PacketIDs.StartPlayer_Command, PacketExecution.StartAPlayer_Command);
-            packetActions.Add(PacketIDs.RefreshPlayers_Command, PacketExecution.RefreshPlayers_Command);
-            packetActions.Add(PacketIDs.UpdateAmmo_Command, PacketExecution.UpdateAmmo_Comand);
-            packetActions.Add(PacketIDs.ChangeWeapon_Command, PacketExecution.ChangeWeapon_Command);
-            packetActions.Add(PacketIDs.GameStart_Command, PacketExecution.GameStart_Command);
-            packetActions.Add(PacketIDs.Damaged_Command, PacketExecution.Damaged_Command);
-            packetActions.Add(PacketIDs.GameEnded_Command, PacketExecution.GameEnded_Command);
-            packetActions.Add(PacketIDs.Restart_Command, PacketExecution.Restart_Command);
-            packetActions.Add(PacketIDs.DisconnectRestart_Command, PacketExecution.DisconnectRestart_Command);
-        }
+        //Packets Client
+        packetActions.Add(PacketIDs.StartPlayer_Command, PacketExecutionClient.StartAPlayer_Command);
+        packetActions.Add(PacketIDs.RefreshPlayers_Command, PacketExecutionClient.RefreshPlayers_Command);
+        packetActions.Add(PacketIDs.UpdateAmmo_Command, PacketExecutionClient.UpdateAmmo_Comand);
+        packetActions.Add(PacketIDs.ChangeWeapon_Command, PacketExecutionClient.ChangeWeapon_Command);
+        packetActions.Add(PacketIDs.GameStart_Command, PacketExecutionClient.GameStart_Command);
+        packetActions.Add(PacketIDs.Damaged_Command, PacketExecutionClient.Damaged_Command);
+        packetActions.Add(PacketIDs.GameEnded_Command, PacketExecutionClient.GameEnded_Command);
+        packetActions.Add(PacketIDs.Restart_Command, PacketExecutionClient.Restart_Command);
+        packetActions.Add(PacketIDs.DisconnectRestart_Command, PacketExecutionClient.DisconnectRestart_Command);
 
         for (short i = 1000; i < 1000 + (short)PacketIDs.Count; i++)
         {
-            if (connectionType == ConnectionType.Server)
-            {
-                NetworkServer.RegisterHandler(i, OnPacketReceived);
-            }
-            else if (connectionType == ConnectionType.Client)
-            {
-                myClient.RegisterHandler(i, OnPacketReceived);
-            }
-            else
-            {
-                NetworkServer.RegisterHandler(i, OnPacketReceived);
-                myClient.RegisterHandler(i, OnPacketReceived);
-            }
+            myClient.RegisterHandler(i, OnPacketReceived);
         }
     }
 
@@ -365,12 +236,12 @@ public class MultiplayerManager : MonoBehaviour
         nameText.enabled = true;
         nameText.text = "El ganador es: " + winner;
 
-        if (connectionType == ConnectionType.Client) restartButton.SetActive(true);
+         restartButton.SetActive(true);
     }
 
     public void RestartButton()
     {
-        new PacketBase(MultiplayerManager.PacketIDs.Server_RestartButton).SendAsClient();
+        new PacketBase(PacketIDs.Server_RestartButton).SendAsClient();
         restartButton.SetActive(false);
         waitingForOtherPlayer.SetActive(true);
     }

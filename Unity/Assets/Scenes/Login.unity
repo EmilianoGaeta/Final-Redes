@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
+  m_IndirectSpecularColor: {r: 0.3731193, g: 0.38073996, b: 0.35872698, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -900,7 +900,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -79.5, y: -48.216858}
+  m_AnchoredPosition: {x: -79.5, y: -48.216797}
   m_SizeDelta: {x: 159, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &179211443
@@ -3715,7 +3715,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 069a1c7277bcb494aa540b11eee710f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  connectionType: 0
   maxPlayers: 2
   countdownText: {fileID: 1947012215}
   restartButton: {fileID: 20224909}
@@ -3894,7 +3893,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1292820285
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5070,8 +5069,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.0049743652, y: 0.000030517578}
-  m_SizeDelta: {x: -1.2900009, y: 0}
+  m_AnchoredPosition: {x: 0.0049743652, y: 0}
+  m_SizeDelta: {x: -1.2900009, y: -511.7808}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1623956285
 MonoBehaviour:
@@ -5642,7 +5641,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 2112672899}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.99999994
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -6906,7 +6905,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}

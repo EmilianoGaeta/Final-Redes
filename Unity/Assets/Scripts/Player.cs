@@ -58,7 +58,7 @@ public class Player : NetworkBehaviour {
 
         _shoottimer = 0;
 
-        new PacketBase(MultiplayerManager.PacketIDs.Server_StartPlayer).Add(myname).Add(connectionId).SendAsClient();
+        new PacketBase(PacketIDs.Server_StartPlayer).Add(myname).Add(connectionId).SendAsClient();
     }
 
     // Update is called once per frame
@@ -67,13 +67,13 @@ public class Player : NetworkBehaviour {
         if (!_canPlay) return;
 
         var dir = (GetDestination() - transform.position).normalized;
-        new PacketBase(MultiplayerManager.PacketIDs.Server_Move)
+        new PacketBase(PacketIDs.Server_Move)
             .Add(Input.GetAxis("Horizontal")).Add(Input.GetAxis("Vertical")).Add(dir)
             .SendAsClient(false);
        
         if (Input.GetMouseButtonDown(0))
         {
-            new PacketBase(MultiplayerManager.PacketIDs.Server_ShootCommand)
+            new PacketBase(PacketIDs.Server_ShootCommand)
            .Add(gun.type).Add(connectionId).SendAsClient();
         }
 
@@ -84,7 +84,7 @@ public class Player : NetworkBehaviour {
                 _shoottimer += Time.deltaTime;
                 if (_shoottimer >= _shootCoolDown)
                 {
-                    new PacketBase(MultiplayerManager.PacketIDs.Server_ShootCommand)
+                    new PacketBase(PacketIDs.Server_ShootCommand)
                    .Add(gun.type).Add(connectionId).SendAsClient();
 
                     _shoottimer = 0;
@@ -94,15 +94,15 @@ public class Player : NetworkBehaviour {
 
         #region Change Weapons
         if (Input.GetKeyDown(KeyCode.Alpha1))
-            new PacketBase(MultiplayerManager.PacketIDs.Server_ChangeWeapon).Add(connectionId).Add(0).SendAsClient();
+            new PacketBase(PacketIDs.Server_ChangeWeapon).Add(connectionId).Add(0).SendAsClient();
         if (Input.GetKeyDown(KeyCode.Alpha2))
-            new PacketBase(MultiplayerManager.PacketIDs.Server_ChangeWeapon).Add(connectionId).Add(1).SendAsClient();
+            new PacketBase(PacketIDs.Server_ChangeWeapon).Add(connectionId).Add(1).SendAsClient();
         if (Input.GetKeyDown(KeyCode.Alpha3))
-            new PacketBase(MultiplayerManager.PacketIDs.Server_ChangeWeapon).Add(connectionId).Add(2).SendAsClient();
+            new PacketBase(PacketIDs.Server_ChangeWeapon).Add(connectionId).Add(2).SendAsClient();
         if (Input.GetKeyDown(KeyCode.Alpha4))
-            new PacketBase(MultiplayerManager.PacketIDs.Server_ChangeWeapon).Add(connectionId).Add(3).SendAsClient();
+            new PacketBase(PacketIDs.Server_ChangeWeapon).Add(connectionId).Add(3).SendAsClient();
         if (Input.GetKeyDown(KeyCode.Alpha5))
-            new PacketBase(MultiplayerManager.PacketIDs.Server_ChangeWeapon).Add(connectionId).Add(4).SendAsClient();
+            new PacketBase(PacketIDs.Server_ChangeWeapon).Add(connectionId).Add(4).SendAsClient();
         #endregion
     }
 
