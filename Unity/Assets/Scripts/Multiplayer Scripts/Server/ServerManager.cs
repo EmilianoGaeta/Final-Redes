@@ -229,7 +229,7 @@ public class ServerManager : MonoBehaviour
 
     public void GameEnded_Command(int playerId)
     {
-        Text nameText = GameObject.Find("Winner").transform.Find("Name").GetComponent<Text>();
+        Text nameText = GameObject.Find("Winner").transform.Find("WinnerName").GetComponent<Text>();
         string winner = "";
         foreach (var player in myPlayers)
         {
@@ -245,7 +245,7 @@ public class ServerManager : MonoBehaviour
 
     public void Restart_Command()
     {
-        GameObject.Find("Winner").transform.Find("Name").GetComponent<Text>().enabled = false;
+        GameObject.Find("Winner").transform.Find("WinnerName").GetComponent<Text>().enabled = false;
 
         foreach (var player in myPlayers)
         {

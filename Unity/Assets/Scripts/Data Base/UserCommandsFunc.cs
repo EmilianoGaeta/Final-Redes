@@ -96,20 +96,20 @@ public class UserCommandsFunc : MonoBehaviour
         DataTable dat = new DataTable();
         dat.Load(res);
 
-        List<Tuple<string, int>> allScores = new List<Tuple<string, int>>();
+        List<Tuple<string, int,int>> allScores = new List<Tuple<string, int,int>>();
 
         for (int i = 0; i < dat.Rows.Count; i++)
         {
-            allScores.Add(new Tuple<string, int>((string)dat.Rows[i]["user"],(int)dat.Rows[i]["score"]));
+            allScores.Add(new Tuple<string, int, int>((string)dat.Rows[i]["user"], (int)dat.Rows[i]["wins"], (int)dat.Rows[i]["lost"]));
         }
 
         res.Close();
 
-        allScores = allScores.OrderByDescending(x => x.Item2).ToList();
+        allScores = allScores.OrderByDescending(x => (x.Item2 - x.Item3)).ToList();
 
         foreach (var score in allScores)
         {
-            scores.Add(score.Item1 + "   " + score.Item2);
+            scores.Add(score.Item1.PadRight(35) + ("Wins: " + score.Item2).PadRight(10) + ("Lost: " + score.Item3).PadRight(10) + "Total: " + (score.Item2 - score.Item3));
         }
 
         return scores.ToArray();
@@ -125,22 +125,37 @@ public class UserCommandsFunc : MonoBehaviour
         DataTable dat = new DataTable();
         dat.Load(res);
 
-        List<Tuple<string, int>> allScores = new List<Tuple<string, int>>();
+        List<Tuple<string, int, int>> allScores = new List<Tuple<string, int, int>>();
 
         for (int i = 0; i < dat.Rows.Count; i++)
         {
-            allScores.Add(new Tuple<string, int>((string)dat.Rows[i]["user"], (int)dat.Rows[i]["score"]));
+            allScores.Add(new Tuple<string, int, int>((string)dat.Rows[i]["user"], (int)dat.Rows[i]["wins"], (int)dat.Rows[i]["lost"]));
         }
 
         res.Close();
 
-        allScores = allScores.OrderByDescending(x => x.Item2).ToList();
+        allScores = allScores.OrderByDescending(x => (x.Item2 - x.Item3)).ToList();
 
         foreach (var score in allScores)
         {
-            scores.Add(score.Item1 + "   " + score.Item2);
+            scores.Add(score.Item1.PadRight(35) + ("Wins: " + score.Item2).PadRight(10) + ("Lost: " + score.Item3).PadRight(10) + "Total: " + (score.Item2 - score .Item3));
         }
 
         return scores.ToArray();
+    }
+
+    public void AddLostToUser(string user)
+    {
+        MySqlDataReader res = _DBAdmin.ExecuteQuery(
+            _DBAdmin.CreateQuery(DBQueries.ADD_LOST_TO_USER, user)
+            );
+        res.Close();
+    }
+    public void AddWinToUser(string user)
+    {
+        MySqlDataReader res = _DBAdmin.ExecuteQuery(
+            _DBAdmin.CreateQuery(DBQueries.ADD_WIN_TO_USER, user)
+            );
+        res.Close();
     }
 }

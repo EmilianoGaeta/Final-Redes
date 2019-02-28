@@ -194,6 +194,10 @@ public class ServerLogic : MonoBehaviour
         {
             ServerManager.instance.GameEnded_Command(playerId);
             new PacketBase(PacketIDs.GameEnded_Command).Add(playerId).SendAsServer();
+
+            _mysqlLogic.GetComponent<UserCommandsFunc>().AddLostToUser(_users[playerId]);
+            _mysqlLogic.GetComponent<UserCommandsFunc>().AddWinToUser(_users.Where(x=> x.Key != playerId).First().Value);
+
         }
     }
 

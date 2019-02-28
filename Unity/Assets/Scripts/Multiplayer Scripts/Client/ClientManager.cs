@@ -197,7 +197,7 @@ public class ClientManager : MonoBehaviour
     public void Restart_Command()
     {
         _waitingForOtherPlayer.SetActive(false);
-        GameObject.Find("Winner").transform.Find("Name").GetComponent<Text>().enabled = false;
+        _winnerName.enabled = false;
 
         foreach (var player in myPlayers)
         {
@@ -243,7 +243,7 @@ public class ClientManager : MonoBehaviour
         return this;
     }
 
-    public ClientManager StupGame(GameObject waiting, GameObject restartButton, Text coundDown, Text winnerName)
+    public ClientManager SetupGame(GameObject waiting, GameObject restartButton, Text coundDown, Text winnerName)
     {
         _waitingForOtherPlayer = waiting;
         _restartButton = restartButton;

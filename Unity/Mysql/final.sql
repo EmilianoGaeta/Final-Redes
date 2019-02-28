@@ -52,9 +52,11 @@ DROP TABLE IF EXISTS `highscore`;
 CREATE TABLE `highscore` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user` varchar(45) NOT NULL,
-  `score` int(11) NOT NULL,
+  `wins` int(11) NOT NULL DEFAULT '0',
+  `lost` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `user_UNIQUE` (`user`)
 ) ENGINE=MyISAM AUTO_INCREMENT=13 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -64,7 +66,7 @@ CREATE TABLE `highscore` (
 
 LOCK TABLES `highscore` WRITE;
 /*!40000 ALTER TABLE `highscore` DISABLE KEYS */;
-INSERT INTO `highscore` VALUES (1,'emi',45),(2,'emi',23),(3,'emi',15),(4,'an',34),(5,'an',14),(6,'an',55),(7,'maria',34),(8,'maria',13),(9,'maria',56),(10,'carlos',24),(11,'carlos',9),(12,'carlos',31);
+INSERT INTO `highscore` VALUES (1,'emi',2,3),(2,'an',0,0),(3,'maria',0,0),(4,'carlos',3,2);
 /*!40000 ALTER TABLE `highscore` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -93,7 +95,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'emi','123','C',1),(15,'carla','123','D',-1),(14,'an','123','D',-1),(13,'carlos','123','D',-1),(12,'juan','123','D',-1),(16,'maria','123','D',-1);
+INSERT INTO `users` VALUES (1,'emi','123','D',-1),(15,'carla','123','D',-1),(14,'an','123','D',-1),(13,'carlos','123','D',-1),(12,'juan','123','D',-1),(16,'maria','123','D',-1);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -123,6 +125,54 @@ elseif exists (SELECT * from final.users where user = $p and $u != $p) then
 	INSERT INTO `final`.`friends` (`user1`, `user2`, `state`) VALUES ($u, $p, "p");
 	set aux = 'Invitation Sent';
     select aux;
+end if;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `AddLossToUser` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AddLossToUser`(IN $u CHAR(20))
+BEGIN
+iF exists (SELECT * FROM final.highscore WHERE (user = $u)) then
+		SET @l = 1;
+        SELECT lost FROM final.highscore WHERE (user = $u) into @l;
+        set @l = @l + 1;
+		UPDATE `final`.`highscore` SET `lost`= @l WHERE (user = $u);
+end if;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `AddWinToUser` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AddWinToUser`(IN $u CHAR(20))
+BEGIN
+iF exists (SELECT * FROM final.highscore WHERE (user = $u)) then
+		SET @w = 1;
+        SELECT wins FROM final.highscore WHERE (user = $u) into @w;
+        set @w = @w + 1;
+		UPDATE `final`.`highscore` SET `wins`= @w WHERE (user = $u);
 end if;
 END ;;
 DELIMITER ;
@@ -426,4 +476,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-28 17:39:42
+-- Dump completed on 2019-02-28 19:49:26

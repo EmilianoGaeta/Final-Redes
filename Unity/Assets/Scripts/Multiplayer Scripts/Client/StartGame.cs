@@ -40,7 +40,7 @@ public class StartGame : MonoBehaviour {
             _winnerName = GameObject.Find("WinnerName").GetComponent<Text>();
             _winnerName.enabled = false;
 
-            GameObject.Find("NetworkManager").GetComponent<ClientManager>().StupGame(_waitingForOtherPlayer, _restartButton, _countdownText, _winnerName);
+            GameObject.Find("NetworkManager").GetComponent<ClientManager>().SetupGame(_waitingForOtherPlayer, _restartButton, _countdownText, _winnerName);
         }
     }
 
