@@ -27,7 +27,16 @@ public class LoginAndRegister : MonoBehaviour
         else
         {
             res.Close();
-            return true;
+            MySqlDataReader res2 = _DBAdmin.ExecuteQuery(
+            _DBAdmin.CreateQuery(DBQueries.GET_CONNECTION_STATE,
+            user));
+
+            DataTable dat2 = new DataTable();
+            dat2.Load(res2);
+            var state = ((string)dat2.Rows[0]["connectedState"]);
+            res2.Close();
+
+            return state != "C";
         }
  
     }

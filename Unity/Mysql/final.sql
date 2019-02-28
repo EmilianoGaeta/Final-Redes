@@ -92,7 +92,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'emi','123','C'),(15,'carla','123','C'),(14,'an','123','D'),(13,'carlos','123','D'),(12,'juan','123','D'),(16,'maria','123','D');
+INSERT INTO `users` VALUES (1,'emi','123','D'),(15,'carla','123','D'),(14,'an','123','D'),(13,'carlos','123','D'),(12,'juan','123','D'),(16,'maria','123','D');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -371,4 +371,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-28  4:22:07
+-- Dump completed on 2019-02-28 13:14:37
