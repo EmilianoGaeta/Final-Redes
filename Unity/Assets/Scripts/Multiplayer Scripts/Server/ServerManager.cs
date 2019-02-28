@@ -12,10 +12,6 @@ public class ServerManager : MonoBehaviour
 
     private int cantJug = 0;
 
-
-
-
-
     public Dictionary<int, Player> myPlayers = new Dictionary<int, Player>();
 
     public static NetworkClient myClient;
@@ -27,6 +23,7 @@ public class ServerManager : MonoBehaviour
     public List<GameObject> objectsToSpawn;
 
     private GameObject _disconnect;
+    private GameObject _hostButton;
 
     Dictionary<PacketIDs, Action<PacketBase>> packetActions = new Dictionary<PacketIDs, Action<PacketBase>>();
 
@@ -34,10 +31,7 @@ public class ServerManager : MonoBehaviour
 
     public void Awake()
     {
-        if (instance == null)
-            instance = this;
-        else
-            Destroy(gameObject);
+        instance = this;
     }
     void Start()
     {
@@ -48,6 +42,8 @@ public class ServerManager : MonoBehaviour
         {
             ClientScene.RegisterPrefab(objectsToSpawn[i]);
         }
+
+        _hostButton = GameObject.Find("Host");
 
         _disconnect = GameObject.Find("Disconnect");
         _disconnect.SetActive(false);
@@ -74,6 +70,7 @@ public class ServerManager : MonoBehaviour
         myClient = ClientScene.ConnectLocalServer();
 
         _disconnect.SetActive(true);
+        _hostButton.SetActive(false);
     }
 
     private void OnConnect(NetworkMessage netMsg)
@@ -86,24 +83,24 @@ public class ServerManager : MonoBehaviour
         _connections.Add(netMsg.conn);
     }
 
-    public void OnUserChecked(bool acepted, string user)
+    public void UserRejected(int connectionId)
     {
-        if (!acepted)
+        for (int i = 0; i < _connections.Count; i++)
         {
-            _connections.RemoveAt(_connections.Count - 1);
-            new PacketBase(PacketIDs.DisconnectRestart_Command).SendAsServer();
-            return;
-        }
+            if (_connections[i].connectionId == connectionId)
+            {
 
-        print("Se conecto alguien con el ID: " + _connections[_connections.Count - 1].connectionId);
-        //PlayerReadyToGame(user);
+                _connections[i].Disconnect();
+                break;
+            }
+        }
     }
 
     public void PlayerReadyToGame(int id, string user)
     {
         NetworkServer.connections[id].isReady = true;
 
-        cantJug++;    
+        cantJug++;
 
         foreach (var player in myPlayers)
         {
@@ -133,33 +130,22 @@ public class ServerManager : MonoBehaviour
     {
         ServerLogic.instance.OnUserDisconected(netMsg.conn.connectionId);
 
-        if (myPlayers.ContainsKey(netMsg.conn.connectionId))
+        for (int i = 0; i < _connections.Count; i++)
         {
-            Debug.Log("The player " + myPlayers[netMsg.conn.connectionId].myname + " is disconnected");
-            NetworkServer.Destroy(myPlayers[netMsg.conn.connectionId].gameObject);
-            myPlayers.Remove(netMsg.conn.connectionId);
-            if(_connections.Count == 2)
+            if(_connections[i].connectionId == netMsg.conn.connectionId)
             {
-                for (int i = 0; i < _connections.Count; i++)
+                _connections.RemoveAt(i);
+
+                if (myPlayers.ContainsKey(netMsg.conn.connectionId))
                 {
-                    if (netMsg.conn.connectionId == _connections[i].connectionId)
-                    {
-                        _connections.RemoveAt(i);
-                        new PacketBase(PacketIDs.DisconnectRestart_Command).SendAsServer();
-                        break;
-                    }
+                    NetworkServer.Destroy(myPlayers[netMsg.conn.connectionId].gameObject);
+                    myPlayers.Remove(netMsg.conn.connectionId);
                 }
             }
-            else if(_connections.Count == 1)
-            {
-                _connections.Clear();
-            }
         }
-
         var walls = GameObject.FindObjectsOfType<DestroyableObject>();
-        foreach (var wall in walls)
-            NetworkServer.Destroy(wall.gameObject);
-
+           foreach (var wall in walls)
+               NetworkServer.Destroy(wall.gameObject);
 
     }
 
@@ -175,10 +161,10 @@ public class ServerManager : MonoBehaviour
         packetActions.Add(PacketIDs.Server_ChangeWeapon, PacketExecutionServer.Server_ChangeWeapon);
         packetActions.Add(PacketIDs.Server_Move, PacketExecutionServer.Server_Move);
         packetActions.Add(PacketIDs.Server_RestartButton, PacketExecutionServer.Server_RestartButton);
-        packetActions.Add(PacketIDs.GetUserHighScore_Command, PacketExecutionServer.GetUserHighScore_Command);
-        packetActions.Add(PacketIDs.GetHighScores_Command, PacketExecutionServer.GetHighScores_Command);
-        packetActions.Add(PacketIDs.FriendList_Command, PacketExecutionServer.FriendList_Command);
-        packetActions.Add(PacketIDs.UserReadyToPlay_Command, PacketExecutionServer.UserReadyToPlay_Command);
+        packetActions.Add(PacketIDs.Server_GetUserHighScore, PacketExecutionServer.Server_GetUserHighScores);
+        packetActions.Add(PacketIDs.Server_GetHighScores, PacketExecutionServer.Server_GetHighScores);
+        packetActions.Add(PacketIDs.Server_FriendList, PacketExecutionServer.Server_FriendList);
+        packetActions.Add(PacketIDs.Server_UserReadyToPlay, PacketExecutionServer.Server_UserReadyToPlay);
 
         for (short i = 1000; i < 1000 + (short)PacketIDs.Count; i++)
         {

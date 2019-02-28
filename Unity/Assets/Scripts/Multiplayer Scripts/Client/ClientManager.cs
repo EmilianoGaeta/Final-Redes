@@ -11,20 +11,21 @@ public class ClientManager : MonoBehaviour
     public Dictionary<int, Player> myPlayers = new Dictionary<int, Player>();
 
     public static NetworkClient myClient;
+
     public static ClientManager instance;
-    public Text countdownText;
-    public GameObject restartButton;
-    public GameObject waitingForOtherPlayer;
+
     [Header("Objects To Spawn")]
     public GameObject prefabPlayer;
     public List<GameObject> objectsToSpawn;
 
-    private GameObject _networkUI;
-    private GameObject _disconnect;
     private InputField _ip;
-
     private InputField _password;
     private InputField _user;
+
+    private GameObject _restartButton;
+    private GameObject _waitingForOtherPlayer;
+    private Text _countdownText;
+    private Text _winnerName;
 
     Dictionary<PacketIDs, Action<PacketBase>> packetActions = new Dictionary<PacketIDs, Action<PacketBase>>();
 
@@ -58,29 +59,6 @@ public class ClientManager : MonoBehaviour
             ClientScene.RegisterPrefab(objectsToSpawn[i]);
         }
 
-        waitingForOtherPlayer.SetActive(false);
-        _disconnect = GameObject.Find("Disconnect");
-        _networkUI = GameObject.Find("NetWork UI");
-
-        if(SceneManager.GetActiveScene().buildIndex == SceneManager.GetSceneByName("Login").buildIndex)
-        {
-            Transform userypass = GameObject.Find("User y Pass").transform;
-            _user = userypass.Find("User").GetComponent<InputField>();
-            _password = userypass.Find("Pass").GetComponent<InputField>();
-            _password.inputType = InputField.InputType.Password;
-
-            _ip = _networkUI.transform.Find("IP").GetComponent<InputField>();
-        }
-
-        _disconnect.SetActive(false);
-
-    }
-
-
-    public void Disconnect()
-    {
-        myClient.Disconnect();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void SetupClient()
@@ -93,12 +71,17 @@ public class ClientManager : MonoBehaviour
 
     private void OnConnectPlayer(NetworkMessage netMsg)
     {
-        new PacketBase(PacketIDs.Server_CheckUser).SetConnectionID(myClient.connection.connectionId).Add(_user.text).Add(_password.text).SendAsClient();
+        new PacketBase(PacketIDs.Server_CheckUser).ConnectionId(myClient.connection.connectionId).Add(_user.text).Add(_password.text).SendAsClient();
+    }
+    private void OnDisconnectPlayer(NetworkMessage netMsg)
+    {
+        SceneManager.LoadScene("Login");
     }
 
     private void AddPacketActions()
     {
         myClient.RegisterHandler(MsgType.Connect, OnConnectPlayer);
+        myClient.RegisterHandler(MsgType.Disconnect, OnDisconnectPlayer);
 
         //Packets Client
         packetActions.Add(PacketIDs.StartPlayer_Command, PacketExecutionClient.StartAPlayer_Command);
@@ -108,9 +91,8 @@ public class ClientManager : MonoBehaviour
         packetActions.Add(PacketIDs.GameStart_Command, PacketExecutionClient.GameStart_Command);
         packetActions.Add(PacketIDs.GameEnded_Command, PacketExecutionClient.GameEnded_Command);
         packetActions.Add(PacketIDs.Restart_Command, PacketExecutionClient.Restart_Command);
-        packetActions.Add(PacketIDs.DisconnectRestart_Command, PacketExecutionClient.DisconnectRestart_Command);
         packetActions.Add(PacketIDs.FriendList_Command, PacketExecutionClient.Friend_List_Command);
-        packetActions.Add(PacketIDs.WriteHighScore_Command, PacketExecutionClient.HighScore_Command);
+        packetActions.Add(PacketIDs.WriteHighScore_Command, PacketExecutionClient.WriteHighScore_Command);
         packetActions.Add(PacketIDs.Conected_Command, PacketExecutionClient.Conected_Command);
 
         for (short i = 1000; i < 1000 + (short)PacketIDs.Count; i++)
@@ -185,7 +167,6 @@ public class ClientManager : MonoBehaviour
 
     public void GameEnded_Command(int playerId)
     {
-        Text nameText = GameObject.Find("Winner").transform.Find("Name").GetComponent<Text>();
         string winner = "";
         foreach (var player in myPlayers)
         {
@@ -195,22 +176,22 @@ public class ClientManager : MonoBehaviour
                 winner = player.Value.myname;
         }
 
-        nameText.enabled = true;
-        nameText.text = "El ganador es: " + winner;
+        _winnerName.enabled = true;
+        _winnerName.text = "El ganador es: " + winner;
 
-         restartButton.SetActive(true);
+         _restartButton.SetActive(true);
     }
 
     public void RestartButton()
     {
         new PacketBase(PacketIDs.Server_RestartButton).SendAsClient();
-        restartButton.SetActive(false);
-        waitingForOtherPlayer.SetActive(true);
+        _restartButton.SetActive(false);
+        _waitingForOtherPlayer.SetActive(true);
     }
 
     public void Restart_Command()
     {
-        waitingForOtherPlayer.SetActive(false);
+        _waitingForOtherPlayer.SetActive(false);
         GameObject.Find("Winner").transform.Find("Name").GetComponent<Text>().enabled = false;
 
         foreach (var player in myPlayers)
@@ -219,15 +200,9 @@ public class ClientManager : MonoBehaviour
         }
     }
 
-    public void DisconnectRestart_Command()
-    {
-        myClient.Disconnect();
-        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
+    //Data Base
     public void FriendList_Command(string[] friendList)
     {
-        Debug.Log("!sasad");
-
         var profile = GameObject.FindObjectOfType<ProfileManager>();
         if (profile != null)
         {
@@ -245,48 +220,56 @@ public class ClientManager : MonoBehaviour
     public void Conected_Command()
     {
         SceneManager.LoadScene("Menu");
-
-        new PacketBase(PacketIDs.GetUserHighScore_Command).SetConnectionID(ClientManager.myClient.connection.connectionId).Add("")
-        .SendAsClient();
-
-        new PacketBase(PacketIDs.FriendList_Command).SetConnectionID(ClientManager.myClient.connection.connectionId).Add(_user.text)
-        .SendAsClient();
-
-
     }
 
-    public void StartGame()
+
+    public ClientManager SetupMenu()
     {
-        SceneManager.LoadScene("Game");
-        new PacketBase(PacketIDs.UserReadyToPlay_Command).SetConnectionID(myClient.connection.connectionId).Add(_user.text)
-       .SendAsClient();
+        new PacketBase(PacketIDs.Server_GetUserHighScore).ConnectionId(myClient.connection.connectionId).Add("").SendAsClient();
+        new PacketBase(PacketIDs.Server_FriendList).ConnectionId(myClient.connection.connectionId).Add(_user.text).SendAsClient();
+        return this;
     }
-    
 
+    public ClientManager SetupLogin(InputField user, InputField password, InputField ip)
+    {
+        _user = user;
+        _password = password;
+        _ip = ip;
+        return this;
+    }
+
+    public ClientManager StupGame(GameObject waiting, GameObject restartButton, Text coundDown, Text winnerName)
+    {
+        _waitingForOtherPlayer = waiting;
+        _restartButton = restartButton;
+        _countdownText = coundDown;
+        _winnerName = winnerName;
+
+        new PacketBase(PacketIDs.Server_UserReadyToPlay).ConnectionId(myClient.connection.connectionId).Add(_user.text).SendAsClient();
+        return this;
+    }
 
     IEnumerator CountDown(int countStart)
     {
-        countdownText = GameObject.Find("CountdownText").GetComponent<Text>();
-        countdownText.enabled = true;
-        waitingForOtherPlayer = GameObject.Find("WaitionfForPlayer");
-        waitingForOtherPlayer.SetActive(false);
+        _countdownText.enabled = true;
+        _waitingForOtherPlayer.SetActive(false);
 
         var wait = new WaitForSeconds(1);
         var count = countStart;
         while (count > 0)
         {
-             countdownText.text = count.ToString();
+            _countdownText.text = count.ToString();
             yield return wait;
             count--;
         }
 
-        countdownText.text = "Fight";
+        _countdownText.text = "Fight";
         yield return wait;
-        countdownText.enabled = false;
+        _countdownText.enabled = false;
         foreach (var player in myPlayers)
         {
             player.Value.CanPlay(true);
         }
     }
-    
+
 }

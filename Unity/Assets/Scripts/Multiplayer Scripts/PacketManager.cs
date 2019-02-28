@@ -28,7 +28,7 @@ public static class PacketManager
             return packet.AddType((TypeOfGun.myType)(object)info);
         else return packet;
     }
-    static public PacketBase SetConnectionID(this PacketBase packet, int id)
+    static public PacketBase ConnectionId(this PacketBase packet, int id)
     {
         packet.connectionID = id;
         return packet;
@@ -114,13 +114,15 @@ public static class PacketManager
         return packet;
     }
 
-    public static void SendAsServer(this PacketBase packet, int connId = -1, bool reliable = true)
+    public static void SendAsServer(this PacketBase packet, int connectionId = -1, bool reliable = true)
     {
         short packetID = 1000;
         packetID += packet.messageID;
 
-        if (connId != -1)
-            NetworkServer.SendToClient(connId, packetID, packet);
+        if (connectionId != -1)
+        {
+            NetworkServer.SendToClient(connectionId, packetID, packet);
+        }
         else
             if (reliable)
             NetworkServer.SendToAll(packetID, packet);

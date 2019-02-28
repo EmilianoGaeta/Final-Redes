@@ -10,35 +10,19 @@ using System.Linq;
 public class UserCommandsFunc : MonoBehaviour
 {
     MySqlAdmin _DBAdmin;
-    private void Start()
+    private void Awake()
     {
         _DBAdmin = FindObjectOfType<MySqlAdmin>();
     }
 
 
-    public void SetConnectionState(string user, string state, int connectionId)
+    public void SetConnectionState(string user, string state)
     {
         MySqlDataReader res = _DBAdmin.ExecuteQuery(
            _DBAdmin.CreateQuery(DBQueries.SET_CONNECTION_STATE,
-           user,state,connectionId.ToString())
-           );
+           user,state));
 
         res.Close();
-
-    }
-
-    public string DisconectUser(int connectionId)
-    {
-        MySqlDataReader res = _DBAdmin.ExecuteQuery(
-           _DBAdmin.CreateQuery(DBQueries.DISCONECT_USER, connectionId.ToString())
-           );
-        DataTable dat = new DataTable();
-        dat.Load(res);
-        var username = (string)dat.Rows[0][0];
-        res.Close();
-
-        return username;
-
     }
 
 
@@ -61,35 +45,28 @@ public class UserCommandsFunc : MonoBehaviour
             {
                 friends.Add((string)dat.Rows[i]["user2"]);
                 friendsStates.Add((string)dat.Rows[i]["state"]);
-
-                MySqlDataReader res2 = _DBAdmin.ExecuteQuery(
-             _DBAdmin.CreateQuery(DBQueries.GET_CONNECTION_STATE,
-             (string)dat.Rows[i]["user2"])
-             );
-                DataTable dat2 = new DataTable();
-                dat2.Load(res2);
-                friendsConnectionStates.Add((string)dat2.Rows[0]["connectedState"]);
-                res2.Close();
-
             }
             else
             {
                 friends.Add((string)dat.Rows[i]["user1"]);
                 friendsStates.Add((string)dat.Rows[i]["state"]);
-
-                MySqlDataReader res2 = _DBAdmin.ExecuteQuery(
-                _DBAdmin.CreateQuery(DBQueries.GET_CONNECTION_STATE,
-                (string)dat.Rows[i]["user1"])
-);
-                DataTable dat2 = new DataTable();
-                dat2.Load(res2);
-                friendsConnectionStates.Add((string)dat2.Rows[0]["connectedState"]);
-                res2.Close();
             }
         }
         res.Close();
 
-        return Tuple.Create<string[], string[], string[]>(friends.ToArray(), friendsStates.ToArray(),friendsConnectionStates.ToArray());
+        for (int i = 0; i < friends.Count; i++)
+        {
+            MySqlDataReader res2 = _DBAdmin.ExecuteQuery(
+           _DBAdmin.CreateQuery(DBQueries.GET_CONNECTION_STATE,
+           friends[i]));
+
+            DataTable dat2 = new DataTable();
+            dat2.Load(res2);
+            friendsConnectionStates.Add((string)dat2.Rows[0]["connectedState"]);
+            res2.Close();
+        }
+
+        return Tuple.Create<string[], string[], string[]>(friends.ToArray(), friendsStates.ToArray(), friendsConnectionStates.ToArray());
     }
 
     public string[] GetUserHighScores(string user)

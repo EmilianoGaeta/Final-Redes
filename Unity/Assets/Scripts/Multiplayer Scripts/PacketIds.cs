@@ -7,9 +7,10 @@
     Server_ChangeWeapon,
     Server_Move,
     Server_RestartButton,
-    GetUserHighScore_Command,
-    GetHighScores_Command,
-    UserReadyToPlay_Command,
+    Server_GetUserHighScore,
+    Server_GetHighScores,
+    Server_FriendList,
+    Server_UserReadyToPlay,
     //To Client
     StartPlayer_Command,
     UpdateAmmo_Command,
@@ -18,9 +19,8 @@
     RefreshPlayers_Command,
     GameEnded_Command,
     Restart_Command,
-    DisconnectRestart_Command,
-    FriendList_Command,
     WriteHighScore_Command,
+    FriendList_Command,
     Conected_Command,
     Count
 }

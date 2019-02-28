@@ -11,9 +11,9 @@ public static class PacketExecutionServer
     public static Action<PacketBase> Server_ChangeWeapon= packBase => ServerLogic.instance.Server_ChangeWeapon(packBase.intInfo[0], packBase.intInfo[1]);
     public static Action<PacketBase> Server_Move = packBase => ServerLogic.instance.ServerMove(packBase.connectionID, packBase.floatInfo[0], packBase.floatInfo[1], packBase.vectorInfo[0]);
     public static Action<PacketBase> Server_RestartButton = packBase => ServerLogic.instance.Server_RestartButton();
-    public static Action<PacketBase> GetUserHighScore_Command = packBase => ServerLogic.instance.Server_GetUserHighScorer(packBase.connectionID, packBase.stringInfo[0]);
-    public static Action<PacketBase> GetHighScores_Command = packBase => ServerLogic.instance.Server_GetHighScores_Command(packBase.connectionID);
-    public static Action<PacketBase> FriendList_Command = packBase => ServerLogic.instance.Server_FriendList(packBase.connectionID, packBase.stringInfo[0]);
-    public static Action<PacketBase> UserReadyToPlay_Command = packBase => ServerLogic.instance.Server_UserReadyToPlay_Command(packBase.connectionID,packBase.stringInfo[0]);
+    public static Action<PacketBase> Server_GetUserHighScores = packBase => ServerLogic.instance.Server_GetUserHighScores(packBase.connectionID, packBase.stringInfo[0]);
+    public static Action<PacketBase> Server_FriendList = packBase => ServerLogic.instance.Server_FriendList(packBase.connectionID, packBase.stringInfo[0]);
+    public static Action<PacketBase> Server_GetHighScores = packBase => ServerLogic.instance.Server_GetHighScores_Command(packBase.connectionID);
+    public static Action<PacketBase> Server_UserReadyToPlay = packBase => ServerLogic.instance.Server_UserReadyToPlay_Command(packBase.connectionID,packBase.stringInfo[0]);
 
 }

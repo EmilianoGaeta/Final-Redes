@@ -47,10 +47,6 @@ public class Player : NetworkBehaviour {
         gun = transform.Find("Pistol").GetComponent<TypeOfGun>();
         gun.gameObject.SetActive(true);
 
-        var netWorkUI = GameObject.Find("NetWork UI");
-
-        netWorkUI.SetActive(false);
-
         _shoottimer = 0;
 
         new PacketBase(PacketIDs.Server_StartPlayer).Add(myname).Add(connectionId).SendAsClient();

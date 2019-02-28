@@ -9,13 +9,11 @@ public class MySqlAdmin : MonoBehaviour {
     public string DBUser;
     public string DBPass;
 
-    [HideInInspector]
-    public string user;
-
     string connData;
     MySqlConnection conn;
 
-    void Start(){
+    void Awake()
+    {
         connData = "Server=" + DBServer + ";Database=" + DBName + ";Uid=" + DBUser + ";Pwd=" + DBPass + ";";
         DBServerConnect();
     }

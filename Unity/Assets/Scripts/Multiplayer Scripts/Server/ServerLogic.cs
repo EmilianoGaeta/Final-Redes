@@ -34,6 +34,8 @@ public class ServerLogic : MonoBehaviour
 
     private GameObject _mysqlLogic;
 
+    private Dictionary<int, string> _users = new Dictionary<int, string>();
+
     void Awake()
     {
         instance = this;
@@ -46,38 +48,37 @@ public class ServerLogic : MonoBehaviour
     }
 
     //Check user
-    public void Server_CheckUser(int id,string user, string pass)
+    public void Server_CheckUser(int connectionId,string user, string pass)
     {
         if (_mysqlLogic.GetComponent<LoginAndRegister>().LogIn(user, pass))
         {
-            new PacketBase(PacketIDs.Conected_Command)
-          .SendAsServer(id);
-
-            _mysqlLogic.GetComponent<UserCommandsFunc>().SetConnectionState(user,"C",id);
-
-            //  ServerManager.instance.OnUserChecked(true, user);
-            //  var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user);
-            //  new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2)
-            //.SendAsServer(id);
-            //  Server_GetHighScores_Command(id);
-
+            new PacketBase(PacketIDs.Conected_Command).SendAsServer(connectionId);
+            _mysqlLogic.GetComponent<UserCommandsFunc>().SetConnectionState(user,"C");
+            _users[connectionId] = user;
         }
         else
-            ServerManager.instance.OnUserChecked(false, user);
+            ServerManager.instance.UserRejected(connectionId);
     }
 
     public void OnUserDisconected(int id)
     {
-        var sa = _mysqlLogic.GetComponent<UserCommandsFunc>().DisconectUser(id);
-        Debug.Log(sa);
+        var userName = "";
+
+        foreach (var user in _users)
+        {
+            if (user.Key.Equals(id))
+            {
+                userName = user.Value;
+                break;
+            }
+        }
+        if (_users.ContainsKey(id))
+            _users.Remove(id);
+
+        _mysqlLogic.GetComponent<UserCommandsFunc>().SetConnectionState(userName, "D");
     }
 
-    public void Server_FriendList(int id,string user)
-    {
-        var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user);
-        new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3)
-      .SendAsServer(id);
-    }
+
     //Set Player Values
     public void Server_StartPlayer(string name, int playerId)
     {
@@ -205,7 +206,14 @@ public class ServerLogic : MonoBehaviour
         }
     }
 
-    public void Server_GetUserHighScorer(int id,string user)
+
+    public void Server_FriendList(int id, string user)
+    {
+        var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user);
+        new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3).SendAsServer(id);
+    }
+
+    public void Server_GetUserHighScores(int id,string user)
     {
         if (user == "")
         {
