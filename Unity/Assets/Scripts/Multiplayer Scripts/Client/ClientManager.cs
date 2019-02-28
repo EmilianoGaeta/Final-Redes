@@ -138,6 +138,8 @@ public class ClientManager : MonoBehaviour
 
     public void RefreshPlayers_Command(int[] values, float shootCoolDown)
     {
+        myPlayers=new Dictionary<int, Player>();
+
         var allPlayersOnScene = GameObject.FindObjectsOfType<Player>();
 
         foreach (var player in allPlayersOnScene)
@@ -146,6 +148,8 @@ public class ClientManager : MonoBehaviour
             {
                 myPlayers.Add(player.connectionId, player);
                 player.OnServerStart(player.myname, player.connectionId, values, shootCoolDown);
+                player.CanPlay(false);
+                PlayerPos(player);
             }
         }
     }

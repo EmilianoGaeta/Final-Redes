@@ -141,6 +141,12 @@ public class ServerManager : MonoBehaviour
                     cantJug--;
                     NetworkServer.Destroy(myPlayers[netMsg.conn.connectionId].gameObject);
                     myPlayers.Remove(netMsg.conn.connectionId);
+                    foreach (var player in myPlayers)
+                    {
+                        PlayerPos(player.Value);
+                        player.Value.OnServerStart(player.Value.myname, player.Value.connectionId, ServerLogic.instance.values, ServerLogic.instance.shootCoolDown);
+                    }
+                    new PacketBase(PacketIDs.RefreshPlayers_Command).Add(ServerLogic.instance.values).Add(ServerLogic.instance.shootCoolDown).SendAsServer();
                 }
             }
         }

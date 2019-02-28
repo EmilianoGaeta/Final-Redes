@@ -83,7 +83,6 @@ public class ServerLogic : MonoBehaviour
     public void Server_StartPlayer(string name, int playerId)
     {
         ServerManager.instance.myPlayers[playerId].OnServerStart(name, playerId, values, shootCoolDown);
-        ServerManager.instance.myPlayers[playerId].CanPlay(false);
         new PacketBase(PacketIDs.StartPlayer_Command).Add(name).Add(playerId).Add(values).Add(shootCoolDown).SendAsServer();
     }
 
