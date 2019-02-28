@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -53,8 +54,18 @@ public class ServerLogic : MonoBehaviour
         if (_mysqlLogic.GetComponent<LoginAndRegister>().LogIn(user, pass))
         {
             new PacketBase(PacketIDs.Conected_Command).SendAsServer(connectionId);
-            _mysqlLogic.GetComponent<UserCommandsFunc>().SetConnectionState(user,"C");
+            _mysqlLogic.GetComponent<UserCommandsFunc>().SetConnectionState(user,"C",connectionId);
             _users[connectionId] = user;
+
+            var connectedFriends = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user).Item1.Select(x => _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserConnectionStateAndID(x))
+                                                                                                          .Where(y=> y.Item2.ToLower() == "c");
+            foreach (var friend in connectedFriends)
+            {
+                var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(friend.Item1);
+                new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3).SendAsServer(friend.Item3);
+            }
+
+
         }
         else
             ServerManager.instance.UserRejected(connectionId);
@@ -75,7 +86,16 @@ public class ServerLogic : MonoBehaviour
         if (_users.ContainsKey(id))
             _users.Remove(id);
 
-        _mysqlLogic.GetComponent<UserCommandsFunc>().SetConnectionState(userName, "D");
+        _mysqlLogic.GetComponent<UserCommandsFunc>().SetConnectionState(userName, "D",-1);
+
+        var connectedFriends = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(userName).Item1.Select(x => _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserConnectionStateAndID(x))
+                                                                                                         .Where(y => y.Item2.ToLower() == "c");
+        foreach (var friend in connectedFriends)
+        {
+            var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(friend.Item1);
+            new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3).SendAsServer(friend.Item3);
+        }
+
     }
 
 

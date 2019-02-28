@@ -16,11 +16,11 @@ public class UserCommandsFunc : MonoBehaviour
     }
 
 
-    public void SetConnectionState(string user, string state)
+    public void SetConnectionState(string user, string state, int id)
     {
         MySqlDataReader res = _DBAdmin.ExecuteQuery(
            _DBAdmin.CreateQuery(DBQueries.SET_CONNECTION_STATE,
-           user,state));
+           user,state,id.ToString()));
 
         res.Close();
     }
@@ -67,6 +67,22 @@ public class UserCommandsFunc : MonoBehaviour
         }
 
         return Tuple.Create<string[], string[], string[]>(friends.ToArray(), friendsStates.ToArray(), friendsConnectionStates.ToArray());
+    }
+
+    public Tuple<string,string,int> GetUserConnectionStateAndID(string user)
+    {
+        MySqlDataReader res = _DBAdmin.ExecuteQuery(
+           _DBAdmin.CreateQuery(DBQueries.GET_CONNECTION_STATE,
+           user));
+
+        DataTable dat = new DataTable();
+        dat.Load(res);
+        var userName = (string)dat.Rows[0]["user"];
+        var connectionState = (string)dat.Rows[0]["connectedState"];
+        var id = (int)dat.Rows[0]["connectionID"];
+        res.Close();
+
+        return new Tuple<string,string, int>(userName,connectionState, id);
     }
 
     public string[] GetUserHighScores(string user)
