@@ -138,6 +138,7 @@ public class ServerManager : MonoBehaviour
 
                 if (myPlayers.ContainsKey(netMsg.conn.connectionId))
                 {
+                    cantJug--;
                     NetworkServer.Destroy(myPlayers[netMsg.conn.connectionId].gameObject);
                     myPlayers.Remove(netMsg.conn.connectionId);
                 }

@@ -75,6 +75,7 @@ public class ClientManager : MonoBehaviour
     }
     private void OnDisconnectPlayer(NetworkMessage netMsg)
     {
+        myPlayers = new Dictionary<int, Player>();
         SceneManager.LoadScene("Login");
     }
 
