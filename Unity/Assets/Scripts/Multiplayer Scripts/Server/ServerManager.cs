@@ -172,6 +172,9 @@ public class ServerManager : MonoBehaviour
         packetActions.Add(PacketIDs.Server_GetHighScores, PacketExecutionServer.Server_GetHighScores);
         packetActions.Add(PacketIDs.Server_FriendList, PacketExecutionServer.Server_FriendList);
         packetActions.Add(PacketIDs.Server_UserReadyToPlay, PacketExecutionServer.Server_UserReadyToPlay);
+        packetActions.Add(PacketIDs.Server_ADD_FRIEND, PacketExecutionServer.Server_Add_Friend);
+        packetActions.Add(PacketIDs.Server_DELETE_FRIEND, PacketExecutionServer.Server_Delete_Friend);
+        packetActions.Add(PacketIDs.Server_ACCEPTREJECT_FRIENDSHIP, PacketExecutionServer.Server_AcceptReject_Friendship);
 
         for (short i = 1000; i < 1000 + (short)PacketIDs.Count; i++)
         {

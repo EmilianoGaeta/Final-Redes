@@ -12,10 +12,15 @@ public class ButtonFunctions : MonoBehaviour
     {
         ClientManager.instance.RestartButton();
     }
-    public void SetuClient()
+    public void LogIn()
     {
-        ClientManager.instance.SetupClient();
+        ClientManager.instance.SetupClient(false);
     }
+    public void Register()
+    {
+        ClientManager.instance.SetupClient(true);
+    }
+
     public void QuitGame()
     {
 

@@ -49,26 +49,48 @@ public class ServerLogic : MonoBehaviour
     }
 
     //Check user
-    public void Server_CheckUser(int connectionId,string user, string pass)
+    public void Server_CheckUser(int connectionId,string user, string pass, bool register)
     {
-        if (_mysqlLogic.GetComponent<LoginAndRegister>().LogIn(user, pass))
+        if (register)
         {
-            new PacketBase(PacketIDs.Conected_Command).SendAsServer(connectionId);
-            _mysqlLogic.GetComponent<UserCommandsFunc>().SetConnectionState(user,"C",connectionId);
-            _users[connectionId] = user;
-
-            var connectedFriends = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user).Item1.Select(x => _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserConnectionStateAndID(x))
-                                                                                                          .Where(y=> y.Item2.ToLower() == "c");
-            foreach (var friend in connectedFriends)
+            if (_mysqlLogic.GetComponent<LoginAndRegister>().Register(user, pass))
             {
-                var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(friend.Item1);
-                new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3).SendAsServer(friend.Item3);
+                new PacketBase(PacketIDs.Conected_Command).SendAsServer(connectionId);
+                _mysqlLogic.GetComponent<UserCommandsFunc>().SetConnectionState(user, "C", connectionId);
+                _users[connectionId] = user;
+
+                var connectedFriends = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user).Item1.Select(x => _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserConnectionStateAndID(x))
+                                                                                                              .Where(y => y.Item2.ToLower() == "c");
+                foreach (var friend in connectedFriends)
+                {
+                    var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(friend.Item1);
+                    new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3).SendAsServer(friend.Item3);
+                }
             }
-
-
+            else
+                ServerManager.instance.UserRejected(connectionId);
         }
         else
-            ServerManager.instance.UserRejected(connectionId);
+        {
+            if (_mysqlLogic.GetComponent<LoginAndRegister>().LogIn(user, pass))
+            {
+                new PacketBase(PacketIDs.Conected_Command).SendAsServer(connectionId);
+                _mysqlLogic.GetComponent<UserCommandsFunc>().SetConnectionState(user,"C",connectionId);
+                _users[connectionId] = user;
+
+                var connectedFriends = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user).Item1.Select(x => _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserConnectionStateAndID(x))
+                                                                                                              .Where(y=> y.Item2.ToLower() == "c");
+                foreach (var friend in connectedFriends)
+                {
+                    var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(friend.Item1);
+                    new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3).SendAsServer(friend.Item3);
+                }
+
+
+            }
+            else
+                ServerManager.instance.UserRejected(connectionId);
+        }
     }
 
     public void OnUserDisconected(int id)
@@ -96,6 +118,58 @@ public class ServerLogic : MonoBehaviour
             new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3).SendAsServer(friend.Item3);
         }
 
+    }
+
+    public void Server_AcceptReject_Friendship(int connectionID, string user1, string user2, string AorR)
+    {
+        _mysqlLogic.GetComponent<UserCommandsFunc>().AcceptRejectFriendship(user1, user2, AorR.ToLower());
+        var user1Aux = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserConnectionStateAndID(user1);
+        var user2Aux = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserConnectionStateAndID(user2);
+        if (user1Aux.Item2.ToUpper() == "C")
+        {
+            var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user1);
+            new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3).SendAsServer(user1Aux.Item3);
+        }
+        if (user2Aux.Item2.ToUpper() == "C")
+        {
+            var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user2);
+            new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3).SendAsServer(user2Aux.Item3);
+        }
+    }
+
+    public void Server_Delete_Friend(int connectionID, string user1, string user2)
+    {
+        _mysqlLogic.GetComponent<UserCommandsFunc>().DeleteFriend(user1, user2);
+        var user1Aux = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserConnectionStateAndID(user1);
+        var user2Aux = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserConnectionStateAndID(user2);
+        if (user1Aux.Item2.ToUpper() == "C")
+        {
+            var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user1);
+            new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3).SendAsServer(user1Aux.Item3);
+        }
+        if (user2Aux.Item2.ToUpper() == "C")
+        {
+            var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user2);
+            new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3).SendAsServer(user2Aux.Item3);
+        }
+    }
+
+    public void Server_Add_Friend(int connectionID, string user1, string user2)
+    {
+        _mysqlLogic.GetComponent<UserCommandsFunc>().AddFriend(user1, user2);
+
+        var user1Aux = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserConnectionStateAndID(user1);
+        var user2Aux = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserConnectionStateAndID(user2);
+        if (user1Aux.Item2.ToUpper() == "C")
+        {
+            var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user1);
+            new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3).SendAsServer(user1Aux.Item3);
+        }
+        if (user2Aux.Item2.ToUpper() == "C")
+        {
+            var friendList = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(user2);
+            new PacketBase(PacketIDs.FriendList_Command).Add(friendList.Item1).Add(friendList.Item2).Add(friendList.Item3).SendAsServer(user2Aux.Item3);
+        }
     }
 
 

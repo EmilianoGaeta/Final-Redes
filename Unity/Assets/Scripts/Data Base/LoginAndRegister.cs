@@ -41,11 +41,17 @@ public class LoginAndRegister : MonoBehaviour
  
     }
 
-    public void Register(string user, string pass)
+    public bool Register(string user, string pass)
     {
         MySqlDataReader res = _DBAdmin.ExecuteQuery(
                               _DBAdmin.CreateQuery(DBQueries.REGISTER_USER,
                               user, pass));
+        DataTable dat = new DataTable();
+        dat.Load(res);
+
+        var succes = (bool)dat.Rows[0][0];
         res.Close();
+
+        return succes;
     }
 }

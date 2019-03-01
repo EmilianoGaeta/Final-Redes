@@ -15,6 +15,30 @@ public class UserCommandsFunc : MonoBehaviour
         _DBAdmin = FindObjectOfType<MySqlAdmin>();
     }
 
+    public void AddFriend(string user1, string user2)
+    {
+        MySqlDataReader res = _DBAdmin.ExecuteQuery(
+          _DBAdmin.CreateQuery(DBQueries.ADD_FRIEND,
+          user1, user2));
+        res.Close();
+    }
+
+    public void AcceptRejectFriendship(string user1, string user2, string AorR)
+    {
+        MySqlDataReader res = _DBAdmin.ExecuteQuery(
+          _DBAdmin.CreateQuery(DBQueries.ACCEPT_REJECT_FRIENDSHIP,
+          user1, user2,AorR));
+        res.Close();
+    }
+
+    public void DeleteFriend(string user1, string user2)
+    {
+        MySqlDataReader res = _DBAdmin.ExecuteQuery(
+          _DBAdmin.CreateQuery(DBQueries.DELETE_FRIEND,
+          user1, user2));
+        res.Close();
+    }
+
 
     public void SetConnectionState(string user, string state, int id)
     {

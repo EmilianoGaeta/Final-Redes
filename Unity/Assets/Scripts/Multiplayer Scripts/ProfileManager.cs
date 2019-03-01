@@ -8,6 +8,8 @@ public class ProfileManager : MonoBehaviour {
 
     public Dictionary<string, GameObject> allTabs = new Dictionary<string, GameObject>();
 
+    public InputField searchFriendsField;
+
 	void Awake()
     {
         var TabsHolder = transform.Find("Tabs");
@@ -96,8 +98,7 @@ public class ProfileManager : MonoBehaviour {
         GameObject highScoresGO;
         if (allTabs.TryGetValue("HighScores", out highScoresGO))
         {
-            new PacketBase(PacketIDs.Server_GetUserHighScore).ConnectionId(ClientManager.myClient.connection.connectionId).Add(highScoresGO.transform.GetComponentsInChildren<Text>().Where(x => x.gameObject.name == "InputText").First().text)
-        .SendAsClient();
+            ClientManager.instance.AskForUserScore(highScoresGO);
         }
     }
 
@@ -105,4 +106,20 @@ public class ProfileManager : MonoBehaviour {
     {
         UnityEngine.SceneManagement.SceneManager.LoadScene("Game");
     }
+    public void AddFriend()
+    {
+        if (searchFriendsField!= null)
+             ClientManager.instance.AddFriend(searchFriendsField.text);
+    }
+    public void DeleteFriend()
+    {
+        if (searchFriendsField != null)
+            ClientManager.instance.DeleteFriend(searchFriendsField.text);
+    }
+    public void AcceptRejectFriend(string AorR)
+    {
+        if (searchFriendsField != null)
+            ClientManager.instance.AcceptRejectFriend(searchFriendsField.text,AorR);
+    }
+
 }

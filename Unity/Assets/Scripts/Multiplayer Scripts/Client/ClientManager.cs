@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,6 +27,8 @@ public class ClientManager : MonoBehaviour
     private GameObject _waitingForOtherPlayer;
     private Text _countdownText;
     private Text _winnerName;
+
+    private bool _register = false;
 
     Dictionary<PacketIDs, Action<PacketBase>> packetActions = new Dictionary<PacketIDs, Action<PacketBase>>();
 
@@ -61,8 +64,10 @@ public class ClientManager : MonoBehaviour
 
     }
 
-    public void SetupClient()
+    public void SetupClient(bool register = false)
     {
+        _register = register;
+
         packetActions = new Dictionary<PacketIDs, Action<PacketBase>>();
         myClient = new NetworkClient();
         AddPacketActions();
@@ -71,7 +76,7 @@ public class ClientManager : MonoBehaviour
 
     private void OnConnectPlayer(NetworkMessage netMsg)
     {
-        new PacketBase(PacketIDs.Server_CheckUser).ConnectionId(myClient.connection.connectionId).Add(_user.text).Add(_password.text).SendAsClient();
+        new PacketBase(PacketIDs.Server_CheckUser).ConnectionId(myClient.connection.connectionId).Add(_user.text).Add(_password.text).Add(_register).SendAsClient();
     }
     private void OnDisconnectPlayer(NetworkMessage netMsg)
     {
@@ -232,6 +237,7 @@ public class ClientManager : MonoBehaviour
     {
         new PacketBase(PacketIDs.Server_GetUserHighScore).ConnectionId(myClient.connection.connectionId).Add("").SendAsClient();
         new PacketBase(PacketIDs.Server_FriendList).ConnectionId(myClient.connection.connectionId).Add(_user.text).SendAsClient();
+        GameObject.Find("UserName").GetComponent<Text>().text = _user.text;
         return this;
     }
 
@@ -277,4 +283,24 @@ public class ClientManager : MonoBehaviour
         }
     }
 
+    public void AskForUserScore(GameObject highScoresGO)
+    {
+        new PacketBase(PacketIDs.Server_GetUserHighScore).ConnectionId(ClientManager.myClient.connection.connectionId).Add(highScoresGO.transform.GetComponentsInChildren<Text>().Where(x => x.gameObject.name == "InputText").First().text)
+        .SendAsClient();
+    }
+    public void AddFriend(string user)
+    {
+        new PacketBase(PacketIDs.Server_ADD_FRIEND).ConnectionId(ClientManager.myClient.connection.connectionId).Add(_user.text).Add(user)
+       .SendAsClient();
+    }
+    public void DeleteFriend(string user)
+    {
+        new PacketBase(PacketIDs.Server_DELETE_FRIEND).ConnectionId(ClientManager.myClient.connection.connectionId).Add(_user.text).Add(user)
+      .SendAsClient();
+    }
+    public void AcceptRejectFriend(string user,string AorR)
+    {
+        new PacketBase(PacketIDs.Server_ACCEPTREJECT_FRIENDSHIP).ConnectionId(ClientManager.myClient.connection.connectionId).Add(_user.text).Add(user).Add(AorR.ToLower())
+     .SendAsClient();
+    }
 }

@@ -11,6 +11,9 @@
     Server_GetHighScores,
     Server_FriendList,
     Server_UserReadyToPlay,
+    Server_ADD_FRIEND,
+    Server_ACCEPTREJECT_FRIENDSHIP,
+    Server_DELETE_FRIEND,
     //To Client
     StartPlayer_Command,
     UpdateAmmo_Command,

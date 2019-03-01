@@ -13,4 +13,7 @@ public static class DBQueries
     public const string GET_HIGHSCORE = "call final.GetHighScores('%1');";
     public const string ADD_LOST_TO_USER = "call final.AddLossToUser('%1');";
     public const string ADD_WIN_TO_USER = "call final.AddWinToUser('%1');";
+    public const string ACCEPT_REJECT_FRIENDSHIP = "call final.RejectOrAcceptFriend('%1', '%2', '%3');";
+    public const string ADD_FRIEND = "call final.AddFriend('%1', '%2');";
+    public const string DELETE_FRIEND = "call final.DeleteFriend('%1', '%2');";
 }
