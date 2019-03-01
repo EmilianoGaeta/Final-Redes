@@ -98,15 +98,18 @@ public class UserCommandsFunc : MonoBehaviour
         MySqlDataReader res = _DBAdmin.ExecuteQuery(
            _DBAdmin.CreateQuery(DBQueries.GET_CONNECTION_STATE,
            user));
-
-        DataTable dat = new DataTable();
-        dat.Load(res);
-        var userName = (string)dat.Rows[0]["user"];
-        var connectionState = (string)dat.Rows[0]["connectedState"];
-        var id = (int)dat.Rows[0]["connectionID"];
+        if (res.HasRows)
+        {
+            DataTable dat = new DataTable();
+            dat.Load(res);
+            var userName = (string)dat.Rows[0]["user"];
+            var connectionState = (string)dat.Rows[0]["connectedState"];
+            var id = (int)dat.Rows[0]["connectionID"];
+            res.Close();
+            return new Tuple<string,string, int>(userName,connectionState, id);
+        }
         res.Close();
-
-        return new Tuple<string,string, int>(userName,connectionState, id);
+        return new Tuple<string, string, int>("", "", -1);
     }
 
     public string[] GetUserHighScores(string user)
