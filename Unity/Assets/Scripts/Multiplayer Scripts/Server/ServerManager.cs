@@ -123,6 +123,7 @@ public class ServerManager : MonoBehaviour
         if (cantJug == 2)
         {
             new PacketBase(PacketIDs.GameStart_Command).SendAsServer();
+            ServerLogic.instance.endGame = false;
         }
     }
 

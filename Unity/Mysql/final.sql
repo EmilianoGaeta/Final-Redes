@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.7.23, for Win32 (AMD64)
+-- MySQL dump 10.13  Distrib 5.7.17, for Win64 (x86_64)
 --
 -- Host: localhost    Database: final
 -- ------------------------------------------------------
--- Server version	5.7.24
+-- Server version	5.5.24-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -29,7 +29,7 @@ CREATE TABLE `friends` (
   `state` varchar(45) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=18 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=21 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -38,7 +38,6 @@ CREATE TABLE `friends` (
 
 LOCK TABLES `friends` WRITE;
 /*!40000 ALTER TABLE `friends` DISABLE KEYS */;
-INSERT INTO `friends` VALUES (1,'emi','an','a'),(10,'juan','emi','a'),(11,'juan','maria','p'),(12,'emi','carlos','p');
 /*!40000 ALTER TABLE `friends` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -57,7 +56,7 @@ CREATE TABLE `highscore` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `user_UNIQUE` (`user`)
-) ENGINE=MyISAM AUTO_INCREMENT=13 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -66,7 +65,7 @@ CREATE TABLE `highscore` (
 
 LOCK TABLES `highscore` WRITE;
 /*!40000 ALTER TABLE `highscore` DISABLE KEYS */;
-INSERT INTO `highscore` VALUES (1,'emi',2,3),(2,'an',0,0),(3,'maria',0,0),(4,'carlos',3,2);
+INSERT INTO `highscore` VALUES (18,'rama',2,1),(17,'carlos',1,2),(16,'emi',0,0);
 /*!40000 ALTER TABLE `highscore` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -86,7 +85,7 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `user_UNIQUE` (`user`)
-) ENGINE=MyISAM AUTO_INCREMENT=18 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=23 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -95,7 +94,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'emi','123','D',-1),(15,'carla','123','D',-1),(14,'an','123','D',-1),(13,'carlos','123','D',-1),(12,'juan','123','D',-1),(16,'maria','123','D',-1),(17,'rama','123','D',-1);
+INSERT INTO `users` VALUES (22,'rama','123','D',-1),(21,'carlos','123','D',-1),(20,'emi','123','D',-1);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -110,15 +109,11 @@ UNLOCK TABLES;
 /*!50003 SET character_set_results = utf8 */ ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER' */ ;
+/*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `AddFriend`(IN $u CHAR(20), IN $p CHAR(20))
 BEGIN
-IF exists (SELECT * FROM final.friends WHERE user1 = $u and user2 = $p and state = "p") then
-		 UPDATE `final`.`friends` SET `state`= "a" WHERE `user1`= $u and `user2`= $p;
-elseiF exists (SELECT * FROM final.friends WHERE user2 = $u and user1 = $p and state = "p") then
-		UPDATE `final`.`friends` SET `state`= "a" WHERE `user2`= $u and `user1`= $p;
-elseif exists (SELECT * from final.users where user = $p and $u != $p) then
+If exists (SELECT * from final.users where user = $p and $u != $p) then
 	INSERT INTO `final`.`friends` (`user1`, `user2`, `state`) VALUES ($u, $p, "p");
 end if;
 END ;;
@@ -183,13 +178,15 @@ DELIMITER ;
 /*!50003 SET character_set_results = utf8 */ ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER' */ ;
+/*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `DeleteFriend`(IN $u CHAR(20), IN $p char(20))
 BEGIN
 IF exists (SELECT * FROM final.friends WHERE user1 = $u and user2 = $p and state = "a") then
 		call final.SetFriendStatus($u,$p,"r");
 elseiF exists (SELECT * FROM final.friends WHERE user2 = $u and user1 = $p and state = "a") then
+		call final.SetFriendStatus($u,$p,"r");
+elseiF exists (SELECT * FROM final.friends WHERE user2 = $u and user1 = $p) then
 		call final.SetFriendStatus($u,$p,"r");
 end if;
 END ;;
@@ -387,7 +384,7 @@ DELIMITER ;
 /*!50003 SET character_set_results = utf8 */ ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER' */ ;
+/*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `RegisterUser`(IN $u CHAR(20), IN $p char(20))
 BEGIN
@@ -397,6 +394,7 @@ IF exists (SELECT * FROM final.users WHERE user = $u) then
         select aux;
 else
 	INSERT INTO `final`.`users` (`user`, `pass`) VALUES ($u, $p);
+    INSERT INTO `final`.`highscore` (`user`, `wins`, `lost`) VALUES ($u, 0, 0);
 	set aux = true;
 end if;
 
@@ -463,28 +461,20 @@ DELIMITER ;
 /*!50003 SET character_set_results = utf8 */ ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER' */ ;
+/*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `SetFriendStatus`(IN $u CHAR(20), IN $p char(20), IN $s char(20))
 BEGIN
-iF exists (SELECT * FROM final.friends WHERE (user2 = $u and user1 = $p)) then
-		if($s = "r") then
+iF exists (SELECT * FROM final.friends WHERE user2 = $u and user1 = $p) then
+		if($s = 'r') then
            call final.QuitFriend($u, $p);
         else
-			SET SQL_SAFE_UPDATES = 0;
+		   SET SQL_SAFE_UPDATES = 0;
            UPDATE `final`.`friends` SET `state`= $s WHERE `user2`= $u and `user1`= $p;
            SET SQL_SAFE_UPDATES = 1;
-           end if;
-elseif exists (SELECT * FROM final.friends WHERE (user1 = $u and user2 = $p)) then
-		if($s = "r") then
-           call final.QuitFriend($u, $p);
-        else
-			SET SQL_SAFE_UPDATES = 0;
-           UPDATE `final`.`friends` SET `state`= $s WHERE `user1`= $u and `user2`= $p;
-           SET SQL_SAFE_UPDATES = 1;
-           end if;
-elseiF exists (SELECT * FROM final.friends WHERE ((user2 = $u and user1 = $p) or (user1 = $u and user2 = $p)) = $p and state = "a") then
-		if($s = "r") then
+        end if;
+elseiF exists (SELECT * FROM final.friends WHERE user1 = $u and user2 = $p and state = "a") then
+		if($s = 'r') then
                call final.QuitFriend($u, $p);
         end if;
 end if;
@@ -525,4 +515,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-28 22:14:18
+-- Dump completed on 2019-02-28 23:48:17

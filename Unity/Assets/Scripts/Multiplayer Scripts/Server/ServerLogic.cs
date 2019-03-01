@@ -37,6 +37,8 @@ public class ServerLogic : MonoBehaviour
 
     private Dictionary<int, string> _users = new Dictionary<int, string>();
 
+    public bool endGame = false;
+
     void Awake()
     {
         instance = this;
@@ -264,7 +266,7 @@ public class ServerLogic : MonoBehaviour
     {
         ServerManager.instance.myPlayers[playerId].life -= damage;
 
-        if(ServerManager.instance.myPlayers[playerId].life <= 0)
+        if(ServerManager.instance.myPlayers[playerId].life <= 0 && !endGame)
         {
             ServerManager.instance.GameEnded_Command(playerId);
             new PacketBase(PacketIDs.GameEnded_Command).Add(playerId).SendAsServer();
@@ -272,6 +274,7 @@ public class ServerLogic : MonoBehaviour
             _mysqlLogic.GetComponent<UserCommandsFunc>().AddLostToUser(_users[playerId]);
             _mysqlLogic.GetComponent<UserCommandsFunc>().AddWinToUser(_users.Where(x=> x.Key != playerId).First().Value);
 
+            endGame = true;
         }
     }
 
@@ -290,7 +293,7 @@ public class ServerLogic : MonoBehaviour
 
             new PacketBase(PacketIDs.GameStart_Command).SendAsServer();
 
-            //Reser values
+            //ReseT values
             foreach (var player in ServerManager.instance.myPlayers)
             {
                 player.Value.OnServerStart(player.Value.myname, player.Value.connectionId, values, shootCoolDown);
@@ -300,6 +303,8 @@ public class ServerLogic : MonoBehaviour
             //Reset position
             ServerManager.instance.Restart_Command();
             new PacketBase(PacketIDs.Restart_Command).SendAsServer();
+
+            endGame = false;
         }
     }
 
