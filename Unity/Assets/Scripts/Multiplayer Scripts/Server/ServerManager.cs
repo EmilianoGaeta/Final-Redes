@@ -154,7 +154,12 @@ public class ServerManager : MonoBehaviour
         var walls = GameObject.FindObjectsOfType<DestroyableObject>();
            foreach (var wall in walls)
                NetworkServer.Destroy(wall.gameObject);
-
+        var bullets = GameObject.FindObjectsOfType<Bullet>();
+        foreach (var bullet in bullets)
+            NetworkServer.Destroy(bullet.gameObject);
+        var grenades = GameObject.FindObjectsOfType<Grenade>();
+        foreach (var grenade in grenades)
+            NetworkServer.Destroy(grenade.gameObject);
     }
 
     private void AddPacketActions()

@@ -95,13 +95,20 @@ public class ClientManager : MonoBehaviour
 
         if (_goToMenu)
         {
-            SetupClient();
+            StartCoroutine(CountDown());
             _goToMenu = false;
         }
         else
         {
             SceneManager.LoadScene("Login");
         }
+    }
+    IEnumerator CountDown()
+    {
+        var wait = new WaitForSeconds(0.5f);
+        yield return wait;
+        SetupClient();
+
     }
 
     private void AddPacketActions()

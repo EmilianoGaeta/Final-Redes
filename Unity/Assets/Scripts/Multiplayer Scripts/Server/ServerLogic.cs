@@ -256,9 +256,12 @@ public class ServerLogic : MonoBehaviour
     //Move
     public void ServerMove(int playerId, float horizontal, float vertical, Vector3 viewDir)
     {
-        var player = ServerManager.instance.myPlayers[playerId];
-        player.View(viewDir);
-        player.Move(horizontal, vertical);
+        if (ServerManager.instance.myPlayers.ContainsKey(playerId))
+        {
+            var player = ServerManager.instance.myPlayers[playerId];
+            player.View(viewDir);
+            player.Move(horizontal, vertical);
+        }
     }
 
     //Damage
@@ -290,6 +293,12 @@ public class ServerLogic : MonoBehaviour
             var walls = GameObject.FindObjectsOfType<DestroyableObject>();
             foreach (var wall in walls)
                 NetworkServer.Destroy(wall.gameObject);
+            var bullets = GameObject.FindObjectsOfType<Bullet>();
+            foreach (var bullet in bullets)
+                NetworkServer.Destroy(bullet.gameObject);
+            var grenades = GameObject.FindObjectsOfType<Grenade>();
+            foreach (var grenade in grenades)
+                NetworkServer.Destroy(grenade.gameObject);
 
             new PacketBase(PacketIDs.GameStart_Command).SendAsServer();
 
