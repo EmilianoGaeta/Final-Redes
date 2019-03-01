@@ -49,6 +49,13 @@ public class UserCommandsFunc : MonoBehaviour
         res.Close();
     }
 
+    public void SetAllToDisconected()
+    {
+        MySqlDataReader res = _DBAdmin.ExecuteQuery(
+          _DBAdmin.CreateQuery(DBQueries.SET_ALL_TO_DISCONECTED,""));
+        res.Close();
+    }
+
 
     public Tuple<string[], string[], string[]> GetUserFriends(string user)
     {

@@ -71,6 +71,8 @@ public class ServerManager : MonoBehaviour
 
         _disconnect.SetActive(true);
         _hostButton.SetActive(false);
+
+        ServerLogic.instance.SetAllToDisconected();
     }
 
     private void OnConnect(NetworkMessage netMsg)

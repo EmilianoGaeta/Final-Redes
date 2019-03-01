@@ -9,6 +9,7 @@ public static class DBQueries
     public const string GET_USER_FRIENDS = "call final.GetFriends('%1');";
     public const string GET_CONNECTION_STATE = "call final.GetUserConnectionState('%1');";
     public const string SET_CONNECTION_STATE = "call final.SetConnectionState('%1', '%2', '%3');";
+    public const string SET_ALL_TO_DISCONECTED = "call final.SetAllToDisconected();";
     public const string GET_USER_HIGHSCORE = "call final.GetUserHighScore('%1');";
     public const string GET_HIGHSCORE = "call final.GetHighScores('%1');";
     public const string ADD_LOST_TO_USER = "call final.AddLossToUser('%1');";

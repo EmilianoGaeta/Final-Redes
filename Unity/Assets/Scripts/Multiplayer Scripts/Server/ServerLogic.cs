@@ -347,4 +347,8 @@ public class ServerLogic : MonoBehaviour
     {
         ServerManager.instance.PlayerReadyToGame(id, user);
     }
+    public void SetAllToDisconected()
+    {
+        _mysqlLogic.GetComponent<UserCommandsFunc>().SetAllToDisconected();
+    }
 }
