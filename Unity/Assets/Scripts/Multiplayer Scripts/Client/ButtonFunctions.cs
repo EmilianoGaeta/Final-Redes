@@ -23,6 +23,6 @@ public class ButtonFunctions : MonoBehaviour
 
     public void QuitGame()
     {
-
+        ClientManager.instance.QuitPlayer();
     }
 }

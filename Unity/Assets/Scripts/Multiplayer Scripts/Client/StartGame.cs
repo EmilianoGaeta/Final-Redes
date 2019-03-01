@@ -12,6 +12,7 @@ public class StartGame : MonoBehaviour {
 
     private GameObject _restartButton;
     private GameObject _waitingForOtherPlayer;
+    private GameObject _disconnectButtons;
     private Text _countdownText;
     private Text _winnerName;
 
@@ -35,12 +36,14 @@ public class StartGame : MonoBehaviour {
             _waitingForOtherPlayer = GameObject.Find("WaitionfForPlayer");
             _restartButton = GameObject.Find("Restart");
             _restartButton.SetActive(false);
+            _disconnectButtons = GameObject.Find("Disconnect Button");
+            _disconnectButtons.SetActive(false);
             _countdownText = GameObject.Find("CountdownText").GetComponent<Text>();
             _countdownText.enabled = false;
             _winnerName = GameObject.Find("WinnerName").GetComponent<Text>();
             _winnerName.enabled = false;
 
-            GameObject.Find("NetworkManager").GetComponent<ClientManager>().SetupGame(_waitingForOtherPlayer, _restartButton, _countdownText, _winnerName);
+            GameObject.Find("NetworkManager").GetComponent<ClientManager>().SetupGame(_waitingForOtherPlayer, _restartButton, _disconnectButtons,_countdownText, _winnerName);
         }
     }
 

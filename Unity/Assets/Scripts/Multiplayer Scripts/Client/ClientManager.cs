@@ -25,12 +25,15 @@ public class ClientManager : MonoBehaviour
 
     private GameObject _restartButton;
     private GameObject _waitingForOtherPlayer;
+    private GameObject _disconnect;
     private Text _countdownText;
     private Text _winnerName;
 
     private bool _register = false;
 
     Dictionary<PacketIDs, Action<PacketBase>> packetActions = new Dictionary<PacketIDs, Action<PacketBase>>();
+
+    private bool _goToMenu = false;
 
     public enum ConnectionType
     {
@@ -49,8 +52,6 @@ public class ClientManager : MonoBehaviour
         }
         else
             Destroy(gameObject);
-
-
     }
     void Start()
     {
@@ -62,6 +63,15 @@ public class ClientManager : MonoBehaviour
             ClientScene.RegisterPrefab(objectsToSpawn[i]);
         }
 
+    }
+
+    void Update()
+    {
+        if (SceneManager.GetActiveScene().buildIndex == SceneManager.GetSceneByName("Game").buildIndex 
+            && Input.GetKeyDown(KeyCode.P))
+        {
+            _disconnect.SetActive(!_disconnect.activeSelf);
+        }
     }
 
     public void SetupClient(bool register = false)
@@ -78,10 +88,20 @@ public class ClientManager : MonoBehaviour
     {
         new PacketBase(PacketIDs.Server_CheckUser).ConnectionId(myClient.connection.connectionId).Add(_user.text).Add(_password.text).Add(_register).SendAsClient();
     }
+
     private void OnDisconnectPlayer(NetworkMessage netMsg)
     {
         myPlayers = new Dictionary<int, Player>();
-        SceneManager.LoadScene("Login");
+
+        if (_goToMenu)
+        {
+            SetupClient();
+            _goToMenu = false;
+        }
+        else
+        {
+            SceneManager.LoadScene("Login");
+        }
     }
 
     private void AddPacketActions()
@@ -243,16 +263,20 @@ public class ClientManager : MonoBehaviour
 
     public ClientManager SetupLogin(InputField user, InputField password, InputField ip)
     {
-        _user = user;
-        _password = password;
-        _ip = ip;
+        if (!_goToMenu)
+        {
+            _user = user;
+            _password = password;
+            _ip = ip;
+        }
         return this;
     }
 
-    public ClientManager SetupGame(GameObject waiting, GameObject restartButton, Text coundDown, Text winnerName)
+    public ClientManager SetupGame(GameObject waiting, GameObject restartButton, GameObject discconect,Text coundDown, Text winnerName)
     {
         _waitingForOtherPlayer = waiting;
         _restartButton = restartButton;
+        _disconnect = discconect;
         _countdownText = coundDown;
         _winnerName = winnerName;
 
@@ -285,22 +309,28 @@ public class ClientManager : MonoBehaviour
 
     public void AskForUserScore(GameObject highScoresGO)
     {
-        new PacketBase(PacketIDs.Server_GetUserHighScore).ConnectionId(ClientManager.myClient.connection.connectionId).Add(highScoresGO.transform.GetComponentsInChildren<Text>().Where(x => x.gameObject.name == "InputText").First().text)
+        new PacketBase(PacketIDs.Server_GetUserHighScore).ConnectionId(myClient.connection.connectionId).Add(highScoresGO.transform.GetComponentsInChildren<Text>().Where(x => x.gameObject.name == "InputText").First().text)
         .SendAsClient();
     }
     public void AddFriend(string user)
     {
-        new PacketBase(PacketIDs.Server_ADD_FRIEND).ConnectionId(ClientManager.myClient.connection.connectionId).Add(_user.text).Add(user)
+        new PacketBase(PacketIDs.Server_ADD_FRIEND).ConnectionId(myClient.connection.connectionId).Add(_user.text).Add(user)
        .SendAsClient();
     }
     public void DeleteFriend(string user)
     {
-        new PacketBase(PacketIDs.Server_DELETE_FRIEND).ConnectionId(ClientManager.myClient.connection.connectionId).Add(_user.text).Add(user)
+        new PacketBase(PacketIDs.Server_DELETE_FRIEND).ConnectionId(myClient.connection.connectionId).Add(_user.text).Add(user)
       .SendAsClient();
     }
     public void AcceptRejectFriend(string user,string AorR)
     {
-        new PacketBase(PacketIDs.Server_ACCEPTREJECT_FRIENDSHIP).ConnectionId(ClientManager.myClient.connection.connectionId).Add(_user.text).Add(user).Add(AorR.ToLower())
+        new PacketBase(PacketIDs.Server_ACCEPTREJECT_FRIENDSHIP).ConnectionId(myClient.connection.connectionId).Add(_user.text).Add(user).Add(AorR.ToLower())
      .SendAsClient();
+    }
+
+    public void QuitPlayer()
+    {
+        _goToMenu = true;
+        myClient.connection.Disconnect();
     }
 }

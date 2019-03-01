@@ -110,7 +110,7 @@ public class ServerLogic : MonoBehaviour
         if (_users.ContainsKey(id))
             _users.Remove(id);
 
-        _mysqlLogic.GetComponent<UserCommandsFunc>().SetConnectionState(userName, "D",-1);
+        _mysqlLogic.GetComponent<UserCommandsFunc>().SetConnectionState(userName, "D", -1);
 
         var connectedFriends = _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserFriends(userName).Item1.Select(x => _mysqlLogic.GetComponent<UserCommandsFunc>().GetUserConnectionStateAndID(x))
                                                                                                          .Where(y => y.Item2.ToLower() == "c");
