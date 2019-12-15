@@ -1,0 +1,4 @@
+Descargar wampserver
+Poner la carpeta Practica1 en: C:\wamp\www
+Instalar mysql Workbench
+Ver como funciona
